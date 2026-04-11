@@ -1,0 +1,835 @@
+<template>
+  <div class="api-docs">
+    <h2>Script API Documentation</h2>
+    <ul uk-accordion="multiple: true">
+      <li class="uk-open">
+        <a class="uk-accordion-title" href>Intro</a>
+        <div class="uk-accordion-content">
+          <p>
+            With scripts you can programmatically control almost any aspect of
+            the state of your projection while it's running using javascript.
+          </p>
+          <p>
+            You can also use either of the X/Y sliders with your scripts to
+            adjust parameters on the fly as well.
+          </p>
+          <p>
+            Below are descriptions of the variables available to your scripts,
+            the methods availble, a description of LFOs and how to use them, and
+            a detailed map of the state object.
+          </p>
+        </div>
+      </li>
+      <li>
+        <a class="uk-accordion-title">Available Variables:</a>
+        <div class="uk-accordion-content">
+          <ul class="uk-list methods">
+            <li>
+              <label>state</label>
+              <p>
+                An object representing the current state of the system (more on
+                the state's structure
+                <a href="#state-structure">below</a>)
+              </p>
+            </li>
+            <li>
+              <label>effect_x</label>
+              <p>The current value (0 to 1) of the X slider</p>
+            </li>
+            <li>
+              <label>effect_y</label>
+              <p>The current value (0 to 1) of the Y slider</p>
+            </li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <a class="uk-accordion-title">Methods:</a>
+        <div class="uk-accordion-content">
+          <ul class="uk-list methods" uk-accordion="multiple: true">
+            <li>
+              <label class="uk-accordion-title">lfo(min, max, interval)</label>
+              <div class="uk-accordion-content">
+                <p>
+                  Creates and returns an LFO (low frequency ossilator) object
+                  for transitioning properies over time (more
+                  <a href="lfos">Below</a>)
+                </p>
+                <div class="example">
+                  <pre>
+/* 
+  @param {float} 'min' - the minimum value for the LFO
+  @param {float} 'max' - the maximum value for the LFO 
+  @param {float} 'interval' - the period (in seconds) of the LFO
+  @returns {object} - An LFO object 
+*/
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+// creates an LFO that transitions from 0 to 
+// 1 using a sine function over 5 seconds 
+let timer = lfo(0, 1, 5); let
+opacity = timer.sin();
+
+// set the first and second video opacity 
+setVideoOpacity([0, 1], opacity);
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title">onBeats(beats, on, off)</label>
+              <div class="uk-accordion-content">
+                <p>
+                  When a midi clock is synced, this method returns a value that
+                  will persist until the next specified beat.
+                  <a href="lfos">Below</a>)
+                </p>
+                <div class="example">
+                  <pre>
+/*
+@param {array[array]} 'beats' 
+ - An array of beats. A beat is an array with the first value
+   being a value 1-4 representing a quarter notes in a measure
+   and the second value 1-4 representing the 16th notes of the 
+   quater notes. Either value can also be a wildcard'*' 
+@param {function(beat, value)} 'on' 
+ - a callback function which is called on the specified beat. The 
+   return value will be persisted until the next beat specified in 
+   the 'beats' array. This function is passed two arguments, the 
+   current beat, and the current value
+@param {function } 'off' 
+ - an optional callback function which is called on every frame 
+   that does NOT fall on a specified beat. It's return value
+   will persist until the next beat. It is passed the current beat 
+   (which will always be null), and the persisted value, so this
+   function can be used to modify that value. 
+
+@returns {any} 
+ - A persisted variable
+*/                  
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+// This function will return a value of 1 at the start of 
+// each beat, and fade that by 10% on each frame
+let pixelate_value = onBeats(
+  [["*", 1]],
+  (b, v) => { return 1 },
+  (b, v) => { return v * 0.9 }
+);
+
+// sets the "pixelate" on video 0 to the value returned 
+// by the onBeats function above
+setValues("Pixelate", 0, pixelate_value, pixelate_value);
+
+// This function return a random value on beats 2 and 4
+let random_value = onBeats(
+  [[2, 1], [4, 1]],
+  () => { return Math.random() }
+);
+
+// This sets the 'cosine palette' effect to be fully on
+// with the color rotation changing to the random value
+// set by the above onBeats function 
+setValues("Cosine Palette", 0, 1, random_value);
+                  </pre>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <label class="uk-accordion-title">getSelectedVideo()</label>
+              <div class="uk-accordion-content">
+                <p>Returns the currently selected video</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @returns {number} 
+                       - The index of the selected video
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // Stub
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title">getSelectedEffect()</label>
+              <div class="uk-accordion-content">
+                <p>Returns the currently selected effect</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @returns {number} 
+                       - The index of the selected effect
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // Stub
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title"
+                >setVideoOpacity(videos, opacity)</label
+              >
+              <div class="uk-accordion-content">
+                <p>Sets the opacity for one or more videos</p>
+
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {number|array} 'videos' 
+                       - a video index, or array of video indexes 
+                      @param {float} 'opacity' 
+                       - the opacity value to set
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // locks all videos opacities to the 
+                      // first videos 
+
+                      // get the first video's opacity
+                      let opacity = getVideoOpacity(0);
+
+                      // set the rest of the video's opacities
+                      setVideoOpacity([1, 2, 3, 4, 5], opacity);
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title">getVideoOpacity(video)</label>
+              <div class="uk-accordion-content">
+                <p>Get's a video's current opacity</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {number} 'video' 
+                       - the index of the video
+                      
+                      @returns {float} 
+                       - The video's current opacity
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // mirror the first's video's opacity onto 
+                      // the second video's
+                      
+                      let opacity = getVideoOpacity(0);
+
+                      // set the second video's opacity to be 
+                      // the opposite
+                      setVideoOpacity(1, 1 - opacity);
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title"
+                >setShapeOpacity(shapes, videos, opacity)</label
+              >
+              <div class="uk-accordion-content">
+                <p>Sets the opacity for one or more shapes</p>
+
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {number|array} 'shapes' 
+                       - a shape index, or array of shape indexes
+                      @param {number|array} 'videos'
+                       - a video index, or array of video indexes 
+                      @param {float} 'opacity' 
+                       - the opacity value to set
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // fades in one shape at a time 
+
+                      // get the number of shapes in the state
+                      let shapeCount = state.shapes.length;
+
+                      // create an LFO with the number of shape
+                      // and an interval of twice your desired
+                      // fade time
+                      let shapeSelector = lfo(
+                        0, shapeCount, shapeCount * 2
+                      );
+
+                      // the shape index will be the floor of
+                      // the shapeSelector LFO
+                      let shapeIndex = Math.floor(
+                        shapeSelector.tri()
+                      )
+
+                      // Create another LFO to fade the opacity
+                      let opacityFader = lfo(0, 1, 1);
+                      let opacity = opacityFader.sin();
+
+                      // Set the selected shape's opacity
+                      setShapeOpacity(shapeIndex, opacity);
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title">getShapeOpacity(shape)</label>
+              <div class="uk-accordion-content">
+                <p>Get's a shape's current opacity</p>
+                <div>
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {number} 'shape' 
+                       - the index of the shape
+                      
+                      @returns {float} 
+                       - The shape's current opacity
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // Make every shape relative to the first
+
+                      // Get the first shape's opacity
+                      let opacity = getShapeOpacity(0, 0);
+
+                      // Get the number of shapes/steps
+                      let count = state.shapes.length
+                      let step = (1/count);
+
+                      // Loop over all the other shapes
+                      for (var i=0; i&lt;count; i++) {
+                          // add the step to the opacity;
+                          let elapsed = opacity + (step * i);
+
+                          // Calculate the new opacity
+                          let perc = (elapsed % 1) / 1;
+                          let o = (1 + Math.sin((perc * 360 * Math.PI) / 180)) * 0.5
+
+                          // Set the opacity
+                          let vidIndexes = [0];
+                          setShapeOpacity(i, vidIndexes, o);
+                      }
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <label class="uk-accordion-title">
+                setValues(effect, videos, x, y)
+              </label>
+              <div class="uk-accordion-content">
+                <p>
+                  Sets the x and y values for the given effect and videos.
+                  Setting a value to null will leave it at whatever the slider's
+                  value is.
+                </p>
+
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {string} 'effect' 
+                       - the index of the effects
+                      @param {number|array} 'videos'
+                       - the index of the videos
+                      @param {float} 'x'
+                       - the x (0-1) value
+                      @param {float} 'y'
+                       - the y (0-1) value
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // Sets the zoom, and effect x prism
+                      // effect values to the opacity value
+
+                      // Loop over all the videos
+                      for (let i=0; i<6; i++) {
+                        // Get the video opacity
+                        let opacity = getVideoOpacity(i);
+
+                        
+                        // Set the zoom effect (x and y)
+                        setValues("Zoom", i, opacity, opacity);
+
+                        // Set the prism x value. Using null
+                        // for y value will just default it to
+                        // the slider's value
+                        setValues("Prism", i, opacity/2, null);
+                      }
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <label class="uk-accordion-title">setTime(videos, time)</label>
+              <div class="uk-accordion-content">
+                <p>Jumps one or more videos to a set time</p>
+                <div>
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {number|array} 'videos' 
+                       - a video index, or array of video indexes 
+                      @param {float} 'time' 
+                       - the time (in seconds) to jump to    
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <label class="uk-accordion-title"
+                >setLoop(videos, start, end)</label
+              >
+              <div class="uk-accordion-content">
+                <p>Loops a video between the start and end time</p>
+                <div>
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {number|array} 'videos' 
+                       - a video index, or array of video indexes 
+                      @param {float} 'start' 
+                       - the start time (in seconds) of the loop   
+                      @param {float} 'end' 
+                       - the end time (in seconds) of the loop 
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <label class="uk-accordion-title"
+                >setPlaybackRate(videos, rate)</label
+              >
+              <div class="uk-accordion-content">
+                <p>Sets the playback rate of one or more videos</p>
+                <div>
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {number|array} 'videos' 
+                       - a video index, or array of video indexes 
+                      @param {float} 'rate' 
+                       - the playback rate   
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <label class="uk-accordion-title">
+                createShape(inputs, output, opacity)
+              </label>
+              <div class="uk-accordion-content">
+                <p>
+                  Adds a temporary shape with the given vertecies. If three
+                  vertecies are passed in, the shape will be a triangle. If four
+                  are passed in, it will be a quad.
+                </p>
+
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {array[array[x,y]]} 'effects' 
+                       - the index of the effects
+                      @param {array[array[x,y]]} 'videos'
+                       - the index of the videos
+                      @param {number} 'opacity'
+                       - the opacity (0-1) value
+                      
+                      @returns {object[shape]} 
+                       - a shape object
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /////// Script for creating shapes ///////
+
+                      // Get the count of the original shapes
+                      let shapesLen = state.shapes.length;
+
+                      // Set all the opacity on those shapes to zero
+                      for (let i = 0; i < shapesLen; i++) {
+                        let shape = state.shapes[i];
+                        for (let j = 0; j < shape.opacity.length; j++) {
+                          shape.opacity[j] = 0;
+                        }
+                      }
+
+                      // Get the ratios for dividing up the screen
+                      let wr = 1 / 16;
+                      let hr = 1 / 9;
+
+                      // loop over the x and x planes
+                      for (let y = 0; y < 1; y++) {
+                        for (let x = 0; x < 1; x++) {
+                          // get the current rectangle boundaries
+                          let w1 = wr * x;
+                          let w2 = wr * (x + 1);
+                          let w3 = (w2 - w1) / 2;
+
+                          let h1 = hr * y;
+                          let h2 = hr * (y + 1);
+
+                          let opacity = x % 2 === y % 2 ? 1 : 0;
+
+                          // Create a new shape
+                          let newShape = createShape(
+                            [
+                              [w1, h1],
+                              [w2, h1],
+                              [w3, h2],
+                            ],
+                            [
+                              [w1, h1],
+                              [w2, h1],
+                              [w3, h2],
+                            ],
+                            opacity,
+                          );
+                        }
+                      }
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title">
+                getValues(effect, video)
+              </label>
+              <div class="uk-accordion-content">
+                <p>Gets the current values (x,y) for an effect/video</p>
+
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {number} 'effect' 
+                       - the index of the an effect
+                      @param {number} 'video'
+                       - the index of a video
+                      
+                      @returns {array[float]} 
+                       - and array of the effect's current [x, y] values
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title">
+                setInputPoints(shapes, fn)
+              </label>
+              <div class="uk-accordion-content">
+                <p>
+                  A function to loop through in a clockwise manner the input
+                  points of the shapes in order to manipulate them
+                </p>
+
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {integer|array} 'shapes' 
+                       - the indexes of the shapes you want to manipulate
+                      @param {function} 'video'
+                       - a function that will be passed an array of vertices
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // A function that rotates the first shape's 
+                      // input points around it's center
+                      
+                      let xRot = lfo(0, 1, effect_x * 10).sin();
+                      let yRot = lfo(0, 1, effect_y * 10).cos();
+
+                      
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="uk-accordion-title">
+                setOutputPoints(shapes, fn)
+              </label>
+              <div class="uk-accordion-content">
+                <p>
+                  A function to loop through in a clockwise manner the output
+                  points of the shapes in order to manipulate them
+                </p>
+
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      /*
+                      @param {integer|array} 'shapes' 
+                       - the indexes of the shapes you want to manipulate
+                      @param {function} 'video'
+                       - a function that will be passed an array of vertices
+                      */
+                    </code>
+                  </pre>
+                </div>
+                <p>Example:</p>
+                <div class="example">
+                  <pre>
+                    <code class="language-js">
+                      // A function that rotates the first shape's 
+                      // output points around it's center
+
+                      // function to get the approximate center 
+                      // of a shape, by averaging it's points
+                      let getCenter = function(idx) {
+                        let shape = state.shapes[idx];
+                        let xSum = 0;
+                        let xLen = 0;
+
+                        let ySum = 0;
+                        let yLen = 0; 
+                        for (let i=0; i&lt;shape.tris.length; i++) {
+                          let tri = shape.tris[i];
+
+                          for (let j=0; j&lt;tri.output.length; j++) {
+                            xSum += tri.output[j][0];
+                            ySum += tri.output[j][1];
+
+                            xLen++;
+                            yLen++;
+                          }
+                        }
+                            
+                        let avgX = xSum / xLen;
+                        let avgY = ySum / yLen;
+
+                        return [avgX, avgY]
+                      } 
+
+                      // Get a saw lfo
+                      let rotator = lfo(0, 1, effect_x * 10).saw();
+                      // Get the rotation in radians                
+                      let rotation =  rotator * (Math.PI * 2);
+                      // Get the center point
+                      let center = getCenter(0);
+
+                      // Set up the function to rotate the
+                      // shape's points. The function passed
+                      // into setOutputPoints will be passed
+                      // all the vertices in the shape
+                      setOutputPoints(0, function(idx, points) {
+                        // Some math, getting the sin/cos of
+                        // the angle of rotation
+                        let c = Math.cos(rotation);
+                        let s = Math.sin(rotation);
+                        
+                        // Get the original point. Note that
+                        // for quads some vertices will have
+                        // more than one point since a quad is 
+                        // made up of two triangles, but here
+                        // we only need the first, since they'll
+                        // both be the same
+                        let oX = points[0][0];
+                        let oY = points[0][1];
+                        
+                        // Just separating out the center array
+                        let cX = center[0];
+                        let cY = center[1];
+                        
+                        // Math to get the new X/Y coordinates
+                        let x = (c * (oX - cX)) + (s * (oY - cY)) + cX;
+                        let y = (c * (oY - cY)) - (s * (oX - cX)) + cY;
+                        
+                        // Loop through all the points in this 
+                        // vertex and set them to the rotated 
+                        // coordinates
+                        for (var i=0; i&lt;points.length; i++) {
+                          points[i][0] = x;
+                          points[i][1] = y;
+                        } 
+                      });
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <li id="lfos">
+        <a class="uk-accordion-title">LFOs:</a>
+        <div class="uk-accordion-content">
+          <p>
+            LFO (Low Frequency Ossilators) are a way of transitioning properties
+            over time. For instance, smoothly fading a video in and out using a
+            sine function, or creating a rapid on/off strobe using a square
+            function.
+          </p>
+
+          <p>Under Construction</p>
+        </div>
+      </li>
+
+      <li id="state-structure">
+        <a class="uk-accordion-title">State Object:</a>
+        <div class="uk-accordion-content">
+          <p>Below is the structure of the state object</p>
+
+          <p>Under Construction</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<script>
+  class ApiDocs extends BuildingBlocks {
+    static get observedProperties() {
+      return [];
+    }
+
+    constructor() {
+      super();
+
+      this.editors = [];
+    }
+
+    connected() {
+      let blocks = this.querySelectorAll("pre");
+
+      blocks.forEach((block) => {
+        let editor = ace.edit(block);
+        editor.setOptions({
+          mode: "ace/mode/javascript",
+          maxLines: Infinity,
+          showGutter: false,
+          readOnly: true,
+          wrap: false,
+        });
+        let originalCode = editor.getValue();
+        let trimmedCode = originalCode.trim();
+        editor.setValue(trimmedCode);
+
+        this.editors.push(editor);
+      });
+    }
+
+    disconnected() {
+      for (let i = 0; i < this.editors.length; i++) {
+        let editor = this.editors[i];
+        editor.destroy();
+        this.editors[i] = null;
+      }
+
+      this.editors = [];
+    }
+  }
+</script>

@@ -1,0 +1,41 @@
+<template>
+  <template :for="range" :id="range[$idx]">
+    <effect-slot
+      :idx="getIndex($idx)"
+      :class="selected?.slot === getIndex($idx) ? 'selected' : ''"
+      @click="select('slot', getIndex($idx))"
+    ></effect-slot>
+  </template>
+</template>
+
+<script>
+  import app from "../app.js";
+
+  class EffectWheel extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["range", "order", "selected"];
+    }
+
+    connected() {
+      app.state.bind(this, "selected", (s) => {
+        this.selected = s;
+      });
+    }
+
+    getIndex(idx) {
+      if (Array.isArray(this.range) && Array.isArray(this.order)) {
+        return this.range[this.order[idx]];
+      }
+
+      return null;
+    }
+
+    select(type, idx) {
+      app.updateSelected(type, idx);
+    }
+  }
+</script>

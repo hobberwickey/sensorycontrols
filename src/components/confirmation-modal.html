@@ -1,0 +1,30 @@
+<template>
+  <div class="confirmation-modal">
+    <template :if="!!headline">
+      <h3>{{headline}}</h3>
+    </template>
+    <template :if="!!msg">
+      <p>{{msg}}</p>
+    </template>
+    <div class="actions">
+      <template :for="(options || [])">
+        <div class="btn" @click="$value.action()">{{$value.label}}</div>
+      </template>
+    </div>
+  </div>
+</template>
+
+<script>
+  import app from "../app";
+  import storage from "../js/storage";
+
+  class ConfirmationModal extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["options", "msg", "headline"];
+    }
+  }
+</script>

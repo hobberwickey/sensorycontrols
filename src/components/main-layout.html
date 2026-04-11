@@ -1,0 +1,157 @@
+<template>
+  <header>
+    <div class="left-nav">
+      <h2 class="fancy">Sensory Controls</h2>
+    </div>
+    <div class="right-nav">
+      <a
+        @click="save()"
+        :class='saved ? "saved" : ""'
+        id="save_btn"
+        href="javascript:void(0)"
+        uk-icon="icon: check"
+        aria-label="Save Project"
+        uk-tooltip="Save Project"
+      ></a>
+      <input
+        id="project_name"
+        type="text"
+        :value="name"
+        @input="updateName($event)"
+      />
+      <a
+        id="open_menu"
+        uk-icon="icon: menu"
+        @click="openMenu($event)"
+        aria-label="Open Menu"
+      ></a>
+      <main-menu></main-menu>
+    </div>
+  </header>
+  <div class="sidebar">
+    <side-menu></side-menu>
+  </div>
+  <div class="controls uk-width-1-1">
+    <div class="uk-width-1-1 uk-flex effects">
+      <div class="uk-width-1-2">
+        <effect-wheel :range="[0, 1, 2, 3, 4, 5]" :order="[0, 1, 5, 2, 4, 3]" />
+      </div>
+      <div class="uk-width-1-2">
+        <effect-wheel
+          :range="[6, 7, 8, 9, 10, 11]"
+          :order="[0, 1, 5, 2, 4, 3]"
+        />
+      </div>
+    </div>
+    <div class="uk-width-1-1 uk-flex videos">
+      <div class="videos uk-width-3-4">
+        <div class="video-slots uk-child-width-1-3@s uk-grid-collapse uk-grid">
+          <template :for="videos" :id="$value.id">
+            <video-slot
+              :video="$value"
+              :idx="$idx"
+              :class="selected?.video === $idx ? 'selected' : ''"
+              @click='select("video", $idx)'
+            ></video-slot>
+          </template>
+        </div>
+      </div>
+      <div class="sliders uk-width-1-4 uk-flex uk-flex-around">
+        <vertical-range
+          :value="Array.isArray(values) ? values[0] : 0"
+          :update="setValues.bind(null, 0)"
+        ></vertical-range>
+        <vertical-range
+          :value="Array.isArray(values) ? values[1] : 0"
+          :update="setValues.bind(null, 1)"
+        ></vertical-range>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import app from "../app.js";
+
+  import { Effect } from "../js/effect.js";
+  import { Script } from "../js/script.js";
+
+  class MainLayout extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["videos", "values", "selected", "saved", "name"];
+    }
+
+    connected() {
+      this.values = [0, 0];
+
+      app.state.bind(this, "videos", (v) => {
+        this.videos = v;
+      });
+
+      app.bind(this, "saved", (s) => {
+        this.saved = s;
+      });
+
+      app.bind(this, "name", (n) => {
+        this.name = n;
+      });
+
+      app.state.bind(this, "selected", (s) => {
+        this.selected = s;
+
+        let { slot, video } = this.selected;
+        let { slots, effects, scripts } = app.state;
+        let target = slots[slot]?.target;
+
+        if (!!target && video !== null) {
+          if (target instanceof Script) {
+            this.values = [...target.values];
+          }
+
+          if (target instanceof Effect) {
+            this.values = [...target.values[video]];
+          }
+        } else {
+          this.values = [0, 0];
+        }
+      });
+
+      window.addEventListener("click", (e) => {
+        this.closeMenu();
+      });
+    }
+
+    updateName(e) {
+      app.name = e.target.value;
+    }
+
+    save() {
+      app.saveProject();
+    }
+
+    openMenu(e) {
+      e.stopPropagation();
+
+      this.querySelector("main-menu").classList.add("active");
+    }
+
+    closeMenu() {
+      this.querySelector("main-menu").classList.remove("active");
+    }
+
+    select(type, idx) {
+      app.updateSelected(type, idx);
+    }
+
+    setValues(idx, e) {
+      this.values[idx] = e.target.value;
+      this.values = [...this.values];
+
+      app.setValues(idx, e.target.value);
+    }
+  }
+</script>

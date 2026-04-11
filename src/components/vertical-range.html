@@ -1,0 +1,25 @@
+<template>
+	<div class="range-input">
+		<input
+			type="range"
+			min="0"
+			max="1"
+			step="0.01"
+			:value="value ?? 0.0"
+			@input="update($event)"
+			:style="'background: linear-gradient(to right, #ccc ' + (value * 100) + '%, #555 ' + value * 100 + '%)'"
+		/>
+	</div>
+</template>
+
+<script>
+	class VerticalRange extends BuildingBlocks {
+		constructor() {
+			super();
+		}
+
+		static get observedProperties() {
+			return ["update", "value", "style"];
+		}
+	}
+</script>

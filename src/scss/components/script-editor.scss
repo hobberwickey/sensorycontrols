@@ -1,0 +1,177 @@
+script-editor {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+
+  .modal {
+    position: absolute;
+    width: 90%;
+    height: 80%;
+    top: 10%;
+    left: 5%;
+    background-color: white;
+    padding: 20px 20px 60px 20px;
+    box-sizing: border-box;
+
+    .container {
+      max-width: 100%;
+      max-height: 100%;
+
+      .dialog {
+        width: 100%;
+        height: 100%;
+        display: flex;
+
+        .sidebar {
+          width: 40%;
+          height: 100%;
+          overflow: auto;
+          display: flex;
+          flex-direction: column;
+          padding-right: 30px;
+          box-sizing: border-box;
+
+          .api-docs {
+            h2 {
+              margin-bottom: 31px;
+            }
+          }
+
+          pre,
+          code {
+            white-space: pre-wrap;
+          }
+
+          .example {
+            pre {
+              margin-bottom: 0px;
+            }
+          }
+
+          label {
+            font-weight: bold;
+            width: 100%;
+            display: block;
+            background-color: var(--fg-color);
+            padding: 7px 16px;
+            box-sizing: border-box;
+          }
+
+          p {
+            font-size: 14px;
+            padding: 0px 16px;
+            margin: 20px 0px;
+          }
+
+          ul {
+            li {
+              border: solid 1px var(--fg-color);
+
+              a.uk-accordion-title {
+                padding: 10px;
+                background-color: var(--fg-color);
+
+                &:before {
+                  content: "";
+                  width: 1em;
+                  height: 1em;
+                  margin-left: 10px;
+                  float: right;
+                  background-image: url(data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2213%22%20height%3D%2213%22%20viewBox%3D%220%200%2013%2013%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%3Crect%20fill%3D%22%23666%22%20width%3D%2213%22%20height%3D%221%22%20x%3D%220%22%20y%3D%226%22%20%2F%3E%0A%20%20%20%20%3Crect%20fill%3D%22%23666%22%20width%3D%221%22%20height%3D%2213%22%20x%3D%226%22%20y%3D%220%22%20%2F%3E%0A%3C%2Fsvg%3E);
+                  background-repeat: no-repeat;
+                  background-position: center;
+                  background-size: contain;
+                  margin-top: 0.2em;
+                }
+              }
+
+              &.uk-open {
+                a {
+                  &:before {
+                    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2213%22%20height%3D%2213%22%20viewBox%3D%220%200%2013%2013%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%3Crect%20fill%3D%22%23666%22%20width%3D%2213%22%20height%3D%221%22%20x%3D%220%22%20y%3D%226%22%20%2F%3E%0A%3C%2Fsvg%3E");
+                  }
+                }
+              }
+
+              ul {
+                padding-left: 16px;
+              }
+            }
+          }
+
+          .methods {
+            li {
+              border: solid 1px var(--fg-color);
+
+              .uk-accordion-content {
+                margin-top: 0px;
+              }
+            }
+          }
+        }
+
+        .editor {
+          width: 60%;
+          max-height: 100%;
+          display: flex;
+          flex-direction: column;
+
+          .label {
+            margin-bottom: 10px;
+
+            input {
+              width: 300px;
+            }
+          }
+
+          .error {
+            color: red;
+            margin-bottom: 10px;
+
+            &.hidden {
+              display: none;
+            }
+          }
+
+          .code-box {
+            flex: 1;
+
+            .editor {
+              height: 100%;
+              width: 100%;
+              border: solid 1px;
+            }
+          }
+
+          .editor-header {
+            form {
+              display: flex;
+
+              & > div {
+                flex: 1;
+                padding: 0px 10px;
+
+                label {
+                  padding-bottom: 10px;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .footer {
+        margin-top: 10px;
+        display: flex;
+
+        .fit {
+          flex: 1;
+        }
+      }
+    }
+  }
+}

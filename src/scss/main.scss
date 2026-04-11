@@ -1,0 +1,131 @@
+@use "components/main-layout.scss";
+@use "components/video-slot.scss";
+@use "components/vertical-range.scss";
+@use "components/effect-slot.scss";
+@use "components/output-screen.scss";
+@use "components/script-editor.scss";
+@use "components/comfirmation-modal.scss";
+@use "components/main-menu.scss";
+
+:root {
+  --btn-color: #212c5b;
+  --btn-text-color: #fff;
+
+  --text-color: #fff;
+  --fg-color: hsl(180deg 20.54% 90.41%);
+  --hover-color: #d8f5ff;
+
+  --fx-clr-0: hsl(204, 70%, 41%);
+  --fx-clr-1: hsl(116, 56%, 40%);
+  --fx-clr-2: hsl(359, 79%, 49%);
+  --fx-clr-3: hsl(30, 100%, 50%);
+  --fx-clr-4: hsl(269, 43%, 42%);
+  --fx-clr-5: hsl(21, 63%, 42%);
+
+  --grp-clr-0: hsl(201, 52%, 77%);
+  --grp-clr-1: hsl(92, 57%, 70%);
+  --grp-clr-2: hsl(1, 92%, 79%);
+  --grp-clr-3: hsl(34, 97%, 71%);
+  --grp-clr-4: hsl(280, 30%, 76%);
+  --grp-clr-5: hsl(60, 100%, 80%);
+
+  --selected-fx-clr: var(--fx-clr-0);
+  --selected-grp-clr: var(--grp-clr-0);
+
+  --default-font-size: 16px;
+}
+
+body {
+  background-color: #2a2a2a;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0px;
+}
+
+.fancy {
+  font-family: "Handjet", sans-serif !important;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-size: 40px !important;
+}
+
+.upload-wrapper {
+  width: 100%;
+  position: relative;
+  cursor: pointer;
+
+  label {
+    position: absolute;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    color: white !important;
+    background-color: transparent;
+    cursor: pointer;
+  }
+
+  input {
+    opacity: 0;
+    width: 100%;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    cursor: pointer;
+  }
+}
+
+form {
+  .input-wrapper {
+    label {
+      display: block;
+      font-size: 12px;
+    }
+
+    input,
+    select {
+      display: block;
+      width: 100%;
+
+      border: none;
+      border-bottom: solid 1px;
+    }
+  }
+}
+
+input[type="text"] {
+  max-width: 100%;
+  max-height: 100%;
+  outline: none;
+  background-color: transparent;
+  text-align: left;
+  border: none;
+  border-bottom: solid 1px;
+}
+
+.btn {
+  position: relative;
+  padding: 5px;
+  background-color: var(--btn-color);
+  color: var(--btn-text-color) !important;
+  text-decoration: none;
+  border-radius: 5px;
+  box-shadow: 0px 0px 7px -2px #000;
+  display: inline-block;
+  cursor: pointer;
+  text-align: center;
+  box-sizing: border-box;
+
+  &.disabled {
+    opacity: 0.7;
+  }
+}

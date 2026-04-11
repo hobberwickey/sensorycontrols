@@ -1,0 +1,19 @@
+<template>
+  <h1>Hello {{val}}</h1>
+</template>
+
+<script>
+  class HelloWorld extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["val"];
+    }
+
+    connected() {
+      this.val = "World";
+    }
+  }
+</script>

@@ -1,0 +1,121 @@
+<template>
+  <div @click="stop($event)">
+    <section>
+      <label>Saved Projects</label>
+      <a
+        @click="uploadProject()"
+        uk-icon="icon: upload"
+        aria-label="Upload Project"
+        uk-tooltip="Upload Project"
+      ></a>
+    </section>
+
+    <div class="obj-list">
+      <template :if="projects?.length === 0">
+        <div class="obj project">
+          <div>No Projects Saved</div>
+        </div>
+      </template>
+      <template :for="projects" :id="$value.id">
+        <div class="obj project" @click="loadProject($value)">
+          <div>{{$value.name}}</div>
+          <a
+            @click="downloadProject($value)"
+            uk-icon="icon: download"
+            aria-label="Download Project"
+            uk-tooltip="Download Project"
+          ></a>
+          <a
+            href="javascript:void(0)"
+            uk-icon="icon: trash"
+            @click="deleteProject($value, $event)"
+            aria-label="Delete Project"
+            uk-tooltip="Delete Project"
+          ></a>
+        </div>
+      </template>
+    </div>
+
+    <section>
+      <label>Midi Controllers</label>
+      <a
+        @click="refreshMidi()"
+        uk-icon="icon: refresh"
+        aria-label="Refresh Midi"
+        uk-tooltip="Refresh Midi"
+      ></a>
+    </section>
+    <div class="obj-list">
+      <template :if="devices?.length === 0">
+        <div class="obj project">
+          <div>No Midi Controllers Found</div>
+        </div>
+      </template>
+    </div>
+
+    <section>
+      <label>Midi Timeclock Input</label>
+      <a
+        @click="refreshMidi()"
+        uk-icon="icon: refresh"
+        aria-label="Refresh Midi"
+        uk-tooltip="Refresh Midi"
+      ></a>
+    </section>
+    <div class="obj-list">
+      <template :if="devices?.length === 0">
+        <div class="obj project">
+          <div>No Midi Controllers Found</div>
+        </div>
+      </template>
+    </div>
+  </div>
+</template>
+
+<script>
+  import app from "../app.js";
+  import { storage } from "../js/storage.js";
+
+  class MainMenu extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["projects", "devices"];
+    }
+
+    connected() {
+      this.devices = [];
+
+      storage.bind(this, "projects", (projects) => {
+        this.projects = projects;
+      });
+    }
+
+    stop(evt) {
+      evt.stopPropagation();
+    }
+
+    uploadProject() {
+      console.log("Upload Project");
+    }
+
+    downloadProject(project) {
+      console.log("Download Project:", project);
+    }
+
+    refreshMidi() {
+      console.log("Refresh Midi");
+    }
+
+    loadProject(project) {
+      app.loadProject(project);
+    }
+
+    deleteProject(project, evt) {
+      evt.stopPropagation();
+      app.deleteProject(project);
+    }
+  }
+</script>

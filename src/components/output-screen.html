@@ -1,0 +1,133 @@
+<template>
+  <div>
+    <section class="videos">
+      <video playsinline loop muted></video>
+      <video playsinline loop muted></video>
+      <video playsinline loop muted></video>
+      <video playsinline loop muted></video>
+      <video playsinline loop muted></video>
+      <video playsinline loop muted></video>
+    </section>
+    <section class="screen">
+      <canvas :width="width" :height="height"></canvas>
+    </section>
+    <section class="ui">
+      <canvas :width="width" :height="height"></canvas>
+    </section>
+  </div>
+</template>
+
+<script>
+  import Screen from "../js/screen.js";
+  import { State } from "../js/state.js";
+
+  class OutputScreen extends BuildingBlocks {
+    constructor() {
+      super();
+
+      this.ctx = null;
+      this.screen = null;
+      this.window = null;
+
+      this.state = new State();
+    }
+
+    static get observedProperties() {
+      return ["width", "height"];
+    }
+
+    connected() {
+      this.videos = [...this.querySelectorAll(".videos video")];
+      this.ctx = this.querySelector(".screen canvas").getContext("webgl");
+      this.screen = new Screen(this.state, this.ctx, this.videos, {
+        width: this.width,
+        height: this.height,
+      });
+      this.screen.play();
+
+      this.state.listen("files", (files, oldFiles) => {
+        if (!this.screen) {
+          return;
+        }
+
+        let { loading } = this.state;
+
+        if (loading !== null) {
+          let file = files[loading];
+
+          if (!!file) {
+            this.screen.loadVideo(loading, file);
+          } else {
+            this.screen.removeVideo(loading);
+          }
+        } else {
+          let newMediaIdx = files.findIndex((file, idx) => {
+            return (
+              file !== null &&
+              file.kind === "videoinput" &&
+              file.deviceId !== oldFiles[idx]?.deviceId
+            );
+          });
+
+          this.screen.setMedia(newMediaIdx, files[newMediaIdx].deviceId);
+        }
+      });
+
+      this.state.slots.map((s) => {
+        s.listen("target", () => {
+          if (!this.screen) {
+            return;
+          }
+
+          this.screen.updateSlots();
+        });
+      });
+
+      this.state.scripts.map((s) => {
+        s.listen("code", () => {
+          if (!this.screen) {
+            return;
+          }
+
+          this.screen.updateSlots();
+        });
+      });
+    }
+
+    removeVideo(idx) {
+      this.screen.removeVideo(idx);
+    }
+
+    loadVideo(idx, file) {
+      this.screen.loadVideo(idx, file);
+    }
+
+    popout() {
+      if (this.window !== null) {
+        console.log("Window already loaded");
+        return;
+      }
+
+      this.screen.stop();
+      // this.screen = null;
+      this.window = window.open("./screen.html");
+
+      let poll = () => {
+        if (!!this.window && this.window.closed) {
+          this.window = null;
+          this.screen = new Screen(this.state, this.ctx, this.videos, {
+            width: this.width,
+            height: this.height,
+          });
+          this.screen.play();
+        } else {
+          setTimeout(() => {
+            poll();
+          }, 100);
+        }
+      };
+
+      poll();
+    }
+  }
+</script>

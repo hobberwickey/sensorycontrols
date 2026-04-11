@@ -1,0 +1,99 @@
+<template>
+  <div class="select">
+    <div
+      href="#"
+      :class="'select-index ' + (target?.disabled ? 'disabled' : '')"
+      uk-tooltip="Toggle Disabled"
+      @click="toggleDisabled($event)"
+    >
+      {{idx + 1}}
+    </div>
+    <div class="select-display">{{target?.label || "Unassigned"}}</div>
+    <div class="select-list">
+      <ul class="uk-list">
+        <li @click="updateSelection(null)">Empty</li>
+        <li @click="updateSelection('__script')">Script</li>
+        <template :for="options" :id="$value.id">
+          <li @click="updateSelection($value.id)">{{$value.label}}</li>
+        </template>
+      </ul>
+    </div>
+    <div class="select-actions">
+      <template :if="isScript(target)">
+        <div class="select-handle" @click="openEdit($event)">
+          <span data-uk-icon="icon: pencil"></span>
+        </div>
+      </template>
+      <div class="select-handle" @click="toggleActive($event)">
+        <span data-uk-icon="icon: triangle-down"></span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import app from "../app";
+  import { storage } from "../js/storage";
+
+  class SlotList extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["idx", "options", "slot", "target"];
+    }
+
+    connected() {
+      this.options = app.state.effects;
+      this.slot = app.state.slots[this.idx];
+
+      this.slot.listen("target", (target) => {
+        this.target = target;
+      });
+    }
+
+    isScript(target) {
+      return target?.values?.length === 2;
+    }
+
+    openEdit(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      let editor = document.createElement("script-editor");
+      editor.save = this.editScript.bind(this);
+      editor.code = this.slot.target.code;
+      editor.label = this.slot.target.label;
+      editor.session = true;
+
+      document.body.appendChild(editor);
+    }
+
+    editScript(label, code, id) {
+      app.updateSlot(this.idx, { label, code });
+
+      if (!!id) {
+        storage.upsertItem("scripts", { id, label, code });
+      }
+    }
+
+    toggleActive(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.querySelector(".select").classList.add("active");
+      window.addEventListener("click", () => {
+        this.querySelector(".select").classList.remove("active");
+      });
+    }
+
+    toggleDisabled(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      app.updateSlot(this.idx, { disabled: !this.slot.disabled });
+    }
+
+    updateSelection(id) {
+      app.setSlot(this.idx, id);
+    }
+  }
+</script>

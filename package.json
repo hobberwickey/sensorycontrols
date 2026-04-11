@@ -1,0 +1,24 @@
+{
+  "name": "sensorycontrols",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "babel-loader": "^10.0.0",
+    "copy-webpack-plugin": "^13.0.1",
+    "mini-css-extract-plugin": "^2.9.4",
+    "sass": "^1.97.1",
+    "webpack": "^5.102.1",
+    "webpack-remove-empty-scripts": "^1.1.1"
+  },
+  "dependencies": {
+    "building-blocks": "github:hobberwickey/building-blocks",
+    "css-loader": "^7.1.2",
+    "sass-loader": "^16.0.6"
+  }
+}

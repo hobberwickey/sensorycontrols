@@ -1,0 +1,152 @@
+<template>
+  <div class="preview">
+    <output-screen
+      :width="360"
+      :height="240"
+      :fullscreen="false"
+    ></output-screen>
+    <a
+      href="javascript:void(0)"
+      uk-icon="icon: arrow-up-right"
+      @click="popout()"
+    ></a>
+  </div>
+  <ul class="tabs">
+    <li :class="tabClass('shapes')" @click="updateTab('shapes')">
+      <a href="#">Shapes</a>
+    </li>
+    <li :class="tabClass('scripts')" @click="updateTab('scripts')">
+      <a href="#">Scripts</a>
+    </li>
+    <li :class="tabClass('effects')" @click="updateTab('effects')">
+      <a href="#">Effects</a>
+    </li>
+    <li :class="tabClass('shaders')" @click="updateTab('shaders')">
+      <a href="#">Shaders </a>
+    </li>
+  </ul>
+  <ul class="uk-list tab-content">
+    <template :if="tab === 'shapes'">
+      <li>
+        <div class="uk-width-1-1 uk-flex actions">
+          <div class="btn" @click="addShape('quad')">Add Quad</div>
+          <div class="btn" @click="addShape('tri')">Add Tri</div>
+        </div>
+        <div class="obj-list">
+          <template :for="shapes" :id="$value.id">
+            <div class="obj">
+              <div>{{$value.label}}</div>
+              <a
+                href="javascript:void(0)"
+                uk-icon="icon: trash"
+                @click="deleteShape($value)"
+              ></a>
+            </div>
+          </template>
+        </div>
+      </li>
+    </template>
+    <template :if="tab === 'scripts'">
+      <li>
+        <div class="uk-width-1-1 uk-flex actions">
+          <div class="btn" @click="openNewScript()">Add Script</div>
+        </div>
+        <div class="obj-list">
+          <template :for="scripts" :id="$value.id">
+            <div class="obj">
+              <div>{{$value.label}}</div>
+              <a
+                href="javascript:void(0)"
+                uk-icon="icon: pencil"
+                @click="openEditScript($value)"
+              ></a>
+              <a
+                href="javascript:void(0)"
+                uk-icon="icon: trash"
+                @click="deleteScript($value)"
+              ></a>
+            </div>
+          </template>
+        </div>
+      </li>
+    </template>
+    <template :if="tab === 'effects'">
+      <li :class="tabClass('effects')">list of effects (not implemented)</li>
+    </template>
+    <template :if="tab === 'shaders'">
+      <li :class="tabClass('shaders')">list of shaders (not implemented)</li>
+    </template>
+  </ul>
+</template>
+
+<script>
+  import app from "../app.js";
+  import { storage } from "../js/storage.js";
+  import { gen_id } from "../js/utils.js";
+
+  class SideMenu extends BuildingBlocks {
+    constructor() {
+      super();
+      this.tab = "shapes";
+    }
+
+    static get observedProperties() {
+      return ["shapes", "scripts", "tab", "shaders", "effects"];
+    }
+
+    connected() {
+      storage.bind(this, "scripts", (scripts) => {
+        this.scripts = [...scripts];
+      });
+      app.state.bind(this, "shapes", (shapes) => {
+        this.shapes = shapes;
+      });
+    }
+
+    tabClass(tab) {
+      return tab === this.tab ? "active" : "";
+    }
+
+    updateTab(tab) {
+      this.tab = tab;
+    }
+
+    addShape(type) {
+      app.state.addShape(type);
+    }
+
+    deleteShape(shape) {
+      app.state.removeShape(shape);
+    }
+
+    openNewScript() {
+      let editor = document.createElement("script-editor");
+      editor.save = this.editScript.bind(this);
+      editor.code = `// start typing your script here. Documentation can be found to the left`;
+      editor.label = `Script ${this.scripts.length + 1}`;
+      editor.id = gen_id();
+      document.body.appendChild(editor);
+    }
+
+    openEditScript(script) {
+      let editor = document.createElement("script-editor");
+      editor.save = this.editScript.bind(this);
+      editor.code = script.code;
+      editor.label = script.label;
+      editor.id = script.id;
+      document.body.appendChild(editor);
+    }
+
+    editScript(label, code, id) {
+      storage.upsertItem("scripts", { id, label, code });
+    }
+
+    deleteScript(script) {
+      storage.removeItem("scripts", script);
+    }
+
+    popout() {
+      this.querySelector("output-screen").popout();
+    }
+  }
+</script>

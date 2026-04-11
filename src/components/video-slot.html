@@ -1,0 +1,193 @@
+<template>
+  <div class="video">
+    <div class="left">
+      <div class="video-header uk-width-1-1 uk-flex uk-flex-middle">
+        <div class="uk-width-1-2 uk-flex uk-flex-inline uk-flex-middle">
+          <h2>{{+idx + 1}}</h2>
+          <a
+            @click="showMedia()"
+            class="remove-video"
+            href="javascript:void(0)"
+            data-uk-icon="icon: video-camera"
+            aria-label="Use Webcam"
+            uk-tooltip="Use Webcam"
+          ></a>
+          <a
+            @click="openEditShader()"
+            class="edit-shader"
+            href="javascript:void(0)"
+            data-uk-icon="icon: pencil"
+            aria-label="Edit Shader (Not Implemented)"
+            uk-tooltip="Edit Shader (Not Implemented)"
+          ></a>
+        </div>
+        <div class="uk-width-1-2 uk-text-right">
+          <a
+            @click="onRemove()"
+            class="remove-video"
+            href="javascript:void(0)"
+            data-uk-icon="icon: trash"
+            aria-label="Clear Video"
+            uk-tooltip="Clear Video"
+          ></a
+          ><a
+            @click="onClear()"
+            class="clear-video"
+            href="javascript:void(0)"
+            data-uk-icon="icon: ban"
+            aria-label="Clear Effects"
+            uk-tooltip="Clear Effects"
+          ></a>
+        </div>
+      </div>
+      <div class="video-body">
+        <div :class="'preview upload-wrapper' + (!loaded ? ' no-video' : '')">
+          <video></video>
+          <div>{{stream?.label || ""}}</div>
+          <p>No Video</p>
+          <label
+            class="uk-label"
+            :for="'video-' + video.id + '-input'"
+            @click="getFile()"
+          ></label>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div>
+        <vertical-range
+          :update="updateOpacity"
+          :value="opacity"
+        ></vertical-range>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import app from "../app.js";
+
+  class VideoSlot extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["video", "loaded", "idx", "opacity", "stream"];
+    }
+
+    connected() {
+      this.opacity = this.video.opacity;
+
+      this.video.bind(this, "opacity", (o) => {
+        this.opacity = o;
+      });
+
+      this.video.bind(this, "loaded", (l) => {
+        console.log(l);
+        if (!this.loaded && l) {
+          this.setPreview();
+        }
+
+        this.loaded = l;
+      });
+    }
+
+    setPreview() {
+      let file = app.state.files[this.idx];
+      if (file instanceof File) {
+        this.querySelector("video").src = URL.createObjectURL(file);
+        this.querySelector("video").currentTime = 50;
+        this.querySelector(".preview").classList.remove("no-video");
+      }
+    }
+
+    onRemove() {
+      this.loaded = false;
+      this.stream = null;
+
+      this.querySelector("video").src = "";
+      this.querySelector(".preview").classList.add("no-video");
+
+      app.removeVideo(this.idx);
+    }
+
+    async getFile() {
+      if (this.loaded) {
+        return;
+      }
+
+      const [fileHandle] = await window.showOpenFilePicker();
+      const file = await fileHandle.getFile();
+
+      this.querySelector("video").src = URL.createObjectURL(file);
+
+      this.querySelector("video").currentTime = 50;
+      this.querySelector(".preview").classList.remove("no-video");
+      // this.querySelector("input[type='file']").disabled = true;
+
+      app.loadVideo(this.idx, file, fileHandle);
+    }
+
+    async showMedia() {
+      let media = [];
+      try {
+        media = await navigator.mediaDevices
+          .enumerateDevices()
+          .then((devices) => {
+            return [...devices].filter((d) => {
+              return d.kind === "videoinput";
+            });
+          });
+      } catch (e) {
+        console.log("Couldn't access media devices");
+      }
+
+      let container = document.createElement("ul");
+      container.className = "media-list";
+      container.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      [...media].map((source) => {
+        let item = document.createElement("li");
+        item.innerHTML = source.label;
+        item.addEventListener("click", () => {
+          container.parentNode.removeChild(container);
+          app.updateVideoMedia(this.idx, source);
+
+          this.querySelector(".preview").classList.remove("no-video");
+          // this.querySelector("input[type='file']").disabled = true;
+
+          this.stream = source;
+        });
+
+        container.appendChild(item);
+      });
+
+      this.appendChild(container);
+
+      let remove = () => {
+        if (!!container.parentNode) {
+          container.parentNode.removeChild(container);
+        }
+
+        window.removeEventListener("click", remove);
+      };
+      window.addEventListener("click", remove);
+    }
+
+    updateOpacity(e) {
+      app.updateOpacity(this.idx, e.target.value);
+
+      this.opacity = e.target.value;
+    }
+
+    openEditShader() {}
+
+    onClear() {
+      app.clearValues(this.idx);
+    }
+  }
+</script>

@@ -1,0 +1,201 @@
+<template>
+  <div class="modal">
+    <div class="container">
+      <div class="header"></div>
+      <div class="dialog">
+        <div class="sidebar">
+          <api-docs></api-docs>
+        </div>
+
+        <div class="editor">
+          <div class="editor-header">
+            <form>
+              <div class="input-wrapper">
+                <label>Script Name</label>
+                <input
+                  type="text"
+                  class="label"
+                  :value="label"
+                  @input="onLabel($event)"
+                />
+              </div>
+              <div class="input-wrapper">
+                <label>Template</label>
+                <select @input="onTemplate($event)">
+                  <option value="">No Template</option>
+                  <template :for="scripts" :id="$value.id">
+                    <option :value="$value.id">{{$value.label}}</option>
+                  </template>
+                </select>
+              </div>
+            </form>
+            <div :class='!!error ? "error " : "error hidden"'>
+              {{(error || '').toString()}}
+            </div>
+          </div>
+          <div class="code-box">
+            <div class="editor"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="fit">
+          <template :if="session">
+            <div :class="'btn' + (!dirty ? ' disabled' : '')" @click="onSave()">
+              Save
+            </div>
+          </template>
+
+          <div
+            :class="'btn' + (!dirty ? ' disabled' : '')"
+            @click="onSaveTemplate($event)"
+          >
+            Save Template
+          </div>
+        </div>
+        <div>
+          <div class="btn" @click="onCancel()">Close</div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay"></div>
+  </div>
+</template>
+
+<script>
+  import { storage } from "../js/storage.js";
+  import { gen_id } from "../js/utils.js";
+
+  class CodeEditor extends BuildingBlocks {
+    constructor() {
+      super();
+
+      this.label = "";
+      this.scripts = [];
+    }
+
+    static get observedProperties() {
+      return [
+        "session",
+        "dirty",
+        "error",
+        "label",
+        "code",
+        "scripts",
+        "save",
+        "id",
+      ];
+    }
+
+    connected() {
+      this.dirty = false;
+      this.editor = ace.edit(this.querySelector(".code-box .editor"));
+      this.editor.session.setMode("ace/mode/javascript");
+      this.editor.setValue(this.code, -1);
+      this.editor.getSession().on("change", () => {
+        this.dirty = true;
+      });
+
+      storage.bind(this, "scripts", (scripts) => {
+        this.scripts = scripts;
+      });
+    }
+
+    disconnected() {
+      this.editor.destroy();
+      this.editor = null;
+    }
+
+    onLabel(evt) {
+      this.label = evt.target.value;
+      this.dirty = true;
+    }
+
+    async onTemplate(evt) {
+      let script = await storage.getItem("scripts", evt.target.value);
+
+      this.id = script.id;
+      this.label = script.label;
+      this.editor.setValue(script.code, -1);
+      this.dirty = true;
+    }
+
+    onSave() {
+      if (!this.dirty) {
+        return;
+      }
+
+      let code = this.editor.getValue();
+
+      if (!!this.save) {
+        this.save(this.label, code);
+      }
+
+      this.dirty = false;
+    }
+
+    async onSaveTemplate(e) {
+      if (!this.dirty) {
+        return;
+      }
+
+      let code = this.editor.getValue();
+      let existing = await storage.getItem("scripts", this.id);
+
+      if (!this.id) {
+        this.id = gen_id();
+      }
+
+      if (!!this.save) {
+        if (existing !== null) {
+          document.querySelectorAll("confirmation-modal").forEach((m) => {
+            m.remove();
+          });
+
+          let confirmation = document.createElement("confirmation-modal");
+          let coords = e.target.getBoundingClientRect();
+
+          confirmation.headline =
+            "Save over existing template, or create a new template?";
+          confirmation.options = [
+            {
+              action: () => {
+                this.save(this.label, code, this.id);
+                confirmation.parentNode.removeChild(confirmation);
+              },
+              label: "Save Existing",
+            },
+            {
+              action: () => {
+                this.save(this.label, code, gen_id());
+                confirmation.parentNode.removeChild(confirmation);
+              },
+              label: "Save New",
+            },
+            {
+              action: () => {
+                confirmation.parentNode.removeChild(confirmation);
+              },
+              label: "Cancel",
+            },
+          ];
+
+          document.body.appendChild(confirmation);
+
+          confirmation.style.top = coords.y - 10;
+          confirmation.style.left = coords.x + coords.width + 10;
+
+          return;
+        }
+
+        this.save(this.label, code, this.id);
+      }
+
+      this.dirty = false;
+    }
+
+    onCancel() {
+      this.remove();
+    }
+  }
+</script>

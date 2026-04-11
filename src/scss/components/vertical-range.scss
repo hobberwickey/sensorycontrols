@@ -1,0 +1,65 @@
+vertical-range {
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  top: 0px;
+  left: 1px;
+  height: 100%;
+  width: 12px;
+  padding: 0px 12px;
+
+  .range-input {
+    position: relative;
+    height: 100%;
+    aspect-ratio: 1/1;
+
+    input {
+      transform: rotate(270deg);
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      margin-left: -50%;
+
+      &:before {
+        display: none;
+      }
+    }
+  }
+
+  input[type="range"] {
+    padding: 0px;
+    appearance: none;
+    width: 100%;
+    height: 12px;
+    border: 1px solid #000;
+    border-radius: 9999px;
+    background-color: #888;
+    cursor: pointer;
+    box-sizing: border-box;
+    transform: rotate(270deg) translateX(8px);
+  }
+
+  /* Thumb: for Chrome, Safari, Edge */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 30px;
+    height: 15px;
+    border: none;
+    border-radius: 3px;
+    background: #fff;
+    box-shadow: none;
+  }
+
+  /* Thumb: for Firefox */
+  input[type="range"]::-moz-range-thumb {
+    width: 30px;
+    height: 15px;
+    border: none;
+    border-radius: 3px;
+    background: #fff;
+    box-shadow: none;
+  }
+}

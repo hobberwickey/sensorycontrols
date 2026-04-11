@@ -1,0 +1,179 @@
+video-slot {
+  color: black;
+  box-shadow: none;
+  padding: 10px 40px 10px 10px;
+  position: relative;
+
+  h2 {
+    color: white;
+    background-color: black;
+    width: 1.3em;
+    height: 1.3em;
+    border-radius: 1.3em;
+    text-align: center;
+    position: relative;
+    font-size: 90%;
+  }
+
+  & > div {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border-radius: 5px;
+    position: relative;
+    background-color: white;
+    padding: 5px;
+    position: relative;
+
+    .left {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      vertical-align: top;
+      width: 100%;
+    }
+
+    .right {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0px;
+      right: 0px;
+
+      & > div {
+        position: absolute;
+        height: 100%;
+        width: 20px;
+        left: 100%;
+        top: 0px;
+      }
+    }
+  }
+
+  &.selected {
+    & > div {
+      background-color: var(--selected-grp-clr);
+      box-shadow: 0px 1px 14px 6px hsl(184.14deg 100% 51.57%) !important;
+    }
+  }
+
+  .media-list {
+    position: absolute;
+    top: 55px;
+    left: 167px;
+    margin-top: 0;
+    list-style-type: none;
+    background-color: #ffffff;
+    z-index: 10;
+    padding: 0px;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-shadow: 2px 4px 11px 0 #fff;
+    border: solid 1px;
+
+    li {
+      padding: 10px;
+
+      &:hover {
+        background-color: var(--hover-color);
+      }
+    }
+  }
+
+  .video-header {
+    border-bottom: none;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    position: relative;
+    border-bottom: solid 1px;
+    box-sizing: border-box;
+
+    label {
+      width: 100%;
+      padding: 0px;
+      display: inline-block;
+
+      input {
+        display: inline-block;
+        vertical-align: middle;
+
+        &[type="radio"] {
+          margin-left: -16px;
+          margin-top: 0px;
+          background-color: white;
+          opacity: 0;
+          position: absolute;
+
+          &:checked {
+            background-color: #34383d !important;
+          }
+        }
+
+        &[type="text"] {
+          width: 100%;
+          max-width: 100%;
+        }
+      }
+    }
+
+    a {
+      display: inline-block;
+      vertical-align: middle;
+      width: 20px;
+      margin-left: 10px;
+      text-align: right;
+      cursor: pointer;
+
+      &:last-child {
+        position: relative;
+      }
+    }
+  }
+
+  .video-body {
+    padding-top: 0px;
+  }
+
+  video {
+    width: 100%;
+    aspect-ratio: 2/1;
+    background-color: black;
+    position: relative;
+    z-index: auto;
+  }
+
+  input[type="range"]::before {
+    display: none;
+  }
+
+  .preview {
+    position: relative;
+
+    p {
+      display: none;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      text-align: center;
+      color: white;
+    }
+
+    div {
+      display: block;
+      position: absolute;
+      color: white;
+      text-align: center;
+      width: 100%;
+      margin: 20px 0px;
+      top: 0;
+    }
+
+    &.no-video {
+      p {
+        display: block;
+      }
+
+      div {
+        display: none;
+      }
+    }
+  }
+}
