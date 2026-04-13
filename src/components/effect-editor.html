@@ -1,0 +1,219 @@
+<template>
+  <div class="modal">
+    <div class="container">
+      <div class="header"></div>
+      <div class="dialog">
+        <div class="sidebar">
+          <div>TODO: write up an effect editing guide</div>
+        </div>
+
+        <div class="editor">
+          <div class="editor-header">
+            <form>
+              <div class="input-wrapper">
+                <label>Effect Name</label>
+                <input
+                  type="text"
+                  class="label"
+                  :value="label"
+                  @input="onLabel($event)"
+                />
+              </div>
+              <div class="input-wrapper">
+                <label>Template</label>
+                <select @input="onTemplate($event)">
+                  <option value="">No Template</option>
+                  <template :for="effects" :id="$value.id">
+                    <option :value="$value.id">{{$value.label}}</option>
+                  </template>
+                </select>
+              </div>
+            </form>
+            <div :class='!!error ? "error " : "error hidden"'>
+              {{(error || '').toString()}}
+            </div>
+          </div>
+          <div class="code-box">
+            <div class="editor"></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div class="fit">
+          <template :if="session">
+            <div :class="'btn' + (!dirty ? ' disabled' : '')" @click="onSave()">
+              Save
+            </div>
+          </template>
+
+          <div
+            :class="'btn' + (!dirty ? ' disabled' : '')"
+            @click="onSaveTemplate($event)"
+          >
+            Save Template
+          </div>
+        </div>
+        <div>
+          <div class="btn" @click="onCancel()">Close</div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay"></div>
+  </div>
+</template>
+
+<script>
+  import { storage } from "../js/storage.js";
+  import { gen_slug } from "../js/utils.js";
+
+  import { Effects } from "../js/effects.js";
+
+  class CodeEditor extends BuildingBlocks {
+    constructor() {
+      super();
+
+      this.label = "";
+      this.effects = [];
+    }
+
+    static get observedProperties() {
+      return [
+        "session",
+        "dirty",
+        "error",
+        "label",
+        "x_label",
+        "y_label",
+        "code",
+        "effects",
+        "save",
+        "id",
+      ];
+    }
+
+    connected() {
+      this.dirty = false;
+      this.editor = ace.edit(this.querySelector(".code-box .editor"));
+      this.editor.session.setMode("ace/mode/glsl");
+
+      this.editor.setValue(this.code, -1);
+      this.editor.getSession().on("change", () => {
+        this.dirty = true;
+      });
+
+      const beautify = ace.require("ace/ext/beautify"); // get reference to extension
+      beautify.beautify(this.editor.session);
+
+      storage.bind(this, "effects", (effects) => {
+        this.effects = [...Effects, ...effects];
+      });
+    }
+
+    disconnected() {
+      this.editor.destroy();
+      this.editor = null;
+    }
+
+    onLabel(evt) {
+      this.label = evt.target.value;
+      this.dirty = true;
+    }
+
+    async onTemplate(evt) {
+      let effect = await storage.getItem("effects", evt.target.value);
+
+      this.id = effect.id;
+      this.label = effect.label;
+      this.editor.setValue(effect.code, -1);
+      this.dirty = true;
+    }
+
+    onSave() {
+      if (!this.dirty) {
+        return;
+      }
+
+      let code = this.editor.getValue();
+
+      if (!!this.save) {
+        this.save(this.label, code);
+      }
+
+      this.dirty = false;
+    }
+
+    async onSaveTemplate(e) {
+      if (!this.dirty) {
+        return;
+      }
+
+      if (!this.label.trim()) {
+        return console.warn("Label Required");
+      }
+
+      let slug = gen_slug(this.label);
+      let parts = slug.split("/");
+      let target = parts.pop();
+      let id = this.id || target;
+      let path = parts.join("/");
+
+      console.log(`Slug: ${slug}, ID: ${id}, PATH: ${path}`);
+
+      return;
+
+      let code = this.editor.getValue();
+      let existing = await storage.getItem("effects", this.id);
+
+      if (!!this.save) {
+        if (!!existing) {
+          document.querySelectorAll("confirmation-modal").forEach((m) => {
+            m.remove();
+          });
+
+          let confirmation = document.createElement("confirmation-modal");
+          let coords = e.target.getBoundingClientRect();
+
+          confirmation.headline =
+            "Save over existing template, or create a new template?";
+          confirmation.options = [
+            {
+              action: () => {
+                this.save(this.label, code, this.id);
+                confirmation.parentNode.removeChild(confirmation);
+              },
+              label: "Save Existing",
+            },
+            {
+              action: () => {
+                this.save(this.label, code, gen_id());
+                confirmation.parentNode.removeChild(confirmation);
+              },
+              label: "Save New",
+            },
+            {
+              action: () => {
+                confirmation.parentNode.removeChild(confirmation);
+              },
+              label: "Cancel",
+            },
+          ];
+
+          document.body.appendChild(confirmation);
+
+          confirmation.style.top = coords.y - 10;
+          confirmation.style.left = coords.x + coords.width + 10;
+
+          return;
+        }
+
+        this.save(this.label, code, this.id);
+      }
+
+      this.dirty = false;
+    }
+
+    onCancel() {
+      this.remove();
+    }
+  }
+</script>

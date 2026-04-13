@@ -13,10 +13,12 @@ main-menu {
 	z-index: 10;
 	width: 300px;
 	box-shadow: 2px 7px 14px -1px #262626;
+	pointer-events: none;
 
 	&.active {
 		transform: translateX(-60px);
 		opacity: 1;
+		pointer-events: all;
 	}
 
 	section {

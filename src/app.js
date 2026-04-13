@@ -161,6 +161,8 @@ class App extends ContextBlocks {
 		};
 
 		storage.upsertItem("projects", project);
+
+		this.saved = true;
 	}
 
 	async loadProject(project) {

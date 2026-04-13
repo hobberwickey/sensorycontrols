@@ -814,9 +814,11 @@ setValues("Cosine Palette", 0, 1, random_value);
           readOnly: true,
           wrap: false,
         });
-        let originalCode = editor.getValue();
-        let trimmedCode = originalCode.trim();
-        editor.setValue(trimmedCode);
+        let code = editor.getValue();
+        editor.setValue(code);
+
+        const beautify = ace.require("ace/ext/beautify"); // get reference to extension
+        beautify.beautify(editor.session);
 
         this.editors.push(editor);
       });

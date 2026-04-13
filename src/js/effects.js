@@ -1,6 +1,8 @@
 export const Effects = [
 	{
 		id: "color_opacity",
+		path: "default",
+		removable: false,
 		label: "Chroma Key",
 		effect_x: "Hue",
 		effect_y: "Sensitivity",
@@ -41,6 +43,8 @@ export const Effects = [
 	},
 	{
 		id: "brightness_opacity",
+		path: "default",
+		removable: false,
 		label: "Luma Key",
 		effect_x: "Brightness",
 		effect_y: "Sensitivity",
@@ -104,6 +108,8 @@ export const Effects = [
 	},
 	{
 		id: "cosine_palette",
+		path: "default",
+		removable: false,
 		label: "Cosine Palette",
 		effect_x: "Intensity",
 		effect_y: "Shift",
@@ -152,6 +158,8 @@ export const Effects = [
 	},
 	{
 		id: "pixelate",
+		path: "default",
+		removable: false,
 		label: "Pixelate",
 		effect_x: "Pixel Size",
 		effect_y: "Pallete Depth",
@@ -182,6 +190,8 @@ export const Effects = [
 	},
 	{
 		id: "prism",
+		path: "default",
+		removable: false,
 		label: "Prism",
 		effect_x: "Horizontal",
 		effect_y: "Vertical",
@@ -206,6 +216,8 @@ export const Effects = [
 	},
 	{
 		id: "kaleidoscope",
+		path: "default",
+		removable: false,
 		label: "Kaleidoscope",
 		effect_x: "Horizontal",
 		effect_y: "Vertical",
@@ -241,6 +253,8 @@ export const Effects = [
 	},
 	{
 		id: "zoom",
+		path: "default",
+		removable: false,
 		label: "Zoom",
 		effect_x: "X-Zoom",
 		effect_y: "Y-Zoom",
@@ -273,6 +287,8 @@ export const Effects = [
 	},
 	{
 		id: "shift",
+		path: "default",
+		removable: false,
 		label: "Shift",
 		effect_x: "X-Shift",
 		effect_y: "Y-Shift",
@@ -317,6 +333,8 @@ export const Effects = [
 	},
 	{
 		id: "color_adjust",
+		path: "default",
+		removable: false,
 		label: "Color Adjust",
 		effect_x: "Desaturate",
 		effect_y: "Bit Depth",

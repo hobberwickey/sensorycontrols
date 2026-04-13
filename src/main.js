@@ -7,5 +7,6 @@ import OutputScreen from "./components/output-screen.html";
 import SideMenu from "./components/side-menu.html";
 import MainMenu from "./components/main-menu.html";
 import ScriptEditor from "./components/script-editor.html";
+import EffectEditor from "./components/effect-editor.html";
 import APIDocs from "./components/api-docs.html";
 import ConfirmationModal from "./components/confirmation-modal.html";

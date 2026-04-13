@@ -71,7 +71,30 @@
       </li>
     </template>
     <template :if="tab === 'effects'">
-      <li :class="tabClass('effects')">list of effects (not implemented)</li>
+      <li>
+        <div class="uk-width-1-1 uk-flex actions">
+          <div class="btn" @click="openNewEffect()">Add Effect</div>
+        </div>
+        <div class="obj-list">
+          <template :for="effects" :id="$value.id">
+            <div class="obj">
+              <div>{{$value.label}}</div>
+              <a
+                href="javascript:void(0)"
+                uk-icon="icon: pencil"
+                @click="openEditEffect($value)"
+              ></a>
+              <template :if="$value.removable">
+                <a
+                  href="javascript:void(0)"
+                  uk-icon="icon: trash"
+                  @click="deleteEffect($value)"
+                ></a>
+              </template>
+            </div>
+          </template>
+        </div>
+      </li>
     </template>
     <template :if="tab === 'shaders'">
       <li :class="tabClass('shaders')">list of shaders (not implemented)</li>
@@ -83,6 +106,8 @@
   import app from "../app.js";
   import { storage } from "../js/storage.js";
   import { gen_id } from "../js/utils.js";
+
+  import { Effects } from "../js/effects.js";
 
   class SideMenu extends BuildingBlocks {
     constructor() {
@@ -100,6 +125,9 @@
       });
       app.state.bind(this, "shapes", (shapes) => {
         this.shapes = shapes;
+      });
+      app.state.bind(this, "effects", (effects) => {
+        this.effects = [...Effects, ...(effects || [])];
       });
     }
 
@@ -143,6 +171,30 @@
 
     deleteScript(script) {
       storage.removeItem("scripts", script);
+    }
+
+    openNewEffect() {
+      let editor = document.createElement("effect-editor");
+      editor.save = this.editEffect.bind(this);
+      editor.code = `// start typing your script here. Documentation can be found to the left`;
+      editor.label = `Custom Effect ${this.effects.length + 1 - Effects.length}`;
+      document.body.appendChild(editor);
+    }
+
+    openEditEffect(effect) {
+      let editor = document.createElement("effect-editor");
+      editor.save = this.editEffect.bind(this);
+      editor.code = effect.shader;
+      editor.label = effect.removable ? effect.label : `${effect.label} Copy`;
+      document.body.appendChild(editor);
+    }
+
+    editEffect(label, code, id) {
+      // Stub
+    }
+
+    deleteEffect(effect) {
+      // Stub
     }
 
     popout() {
