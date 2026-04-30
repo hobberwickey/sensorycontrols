@@ -13,8 +13,10 @@
       <ul class="uk-list">
         <li @click="updateSelection(null)">Empty</li>
         <li @click="updateSelection('__script')">Script</li>
-        <template :for="options" :id="$value.id">
-          <li @click="updateSelection($value.id)">{{$value.label}}</li>
+        <template :for="options" :id="$value.id + '_' + $value.active">
+          <template :if="$value.active">
+            <li @click="updateSelection($value.id)">{{$value.label}}</li>
+          </template>
         </template>
       </ul>
     </div>
@@ -50,6 +52,16 @@
 
       this.slot.listen("target", (target) => {
         this.target = target;
+      });
+
+      app.state.bind(this, "effects", (effects) => {
+        this.options = effects;
+
+        effects.map((e) => {
+          e.bindOnce(this, "active", (active) => {
+            this.options = [...app.state.effects];
+          });
+        });
       });
     }
 
@@ -93,6 +105,7 @@
     }
 
     updateSelection(id) {
+      console.log(id);
       app.setSlot(this.idx, id);
     }
   }

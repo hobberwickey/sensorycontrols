@@ -1,0 +1,53 @@
+<template>
+  <a
+    :uk-icon="getIcon(idx, key, value)"
+    :class="getClass(idx, key, value)"
+    @click="getClick(idx, key, value, $event)"
+    :aria-label="getLabel(idx, key, value)"
+    :uk-tooltip="getLabel(idx, key, value)"
+  ></a>
+</template>
+
+<script>
+  class FolderListAction extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["options", "idx", "key", "value"];
+    }
+
+    connected() {
+      // Don't think anything needs to happen here
+    }
+
+    getIcon(idx, key, value) {
+      return "icon: " + this.options.icon;
+    }
+
+    getClass(idx, key, value) {
+      let base = !!this.options.class ? this.options.class : "";
+      // Gross
+      let active = !!this.options.active
+        ? this.options.active(idx, key, value)
+          ? "active"
+          : ""
+        : "";
+
+      return ["uk-icon", base, active].join(" ").trim();
+    }
+
+    getClick(idx, key, value, event) {
+      if (!this.options.click) {
+        return () => {};
+      }
+
+      return this.options.click(idx, key, value, event);
+    }
+
+    getLabel(idx, key, value) {
+      return this.options.label || "";
+    }
+  }
+</script>

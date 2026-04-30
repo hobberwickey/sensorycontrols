@@ -8,6 +8,8 @@
     <a
       href="javascript:void(0)"
       uk-icon="icon: arrow-up-right"
+      aria-label="Popout Video"
+      uk-tooltip="Popout Video"
       @click="popout()"
     ></a>
   </div>
@@ -40,6 +42,8 @@
                 href="javascript:void(0)"
                 uk-icon="icon: trash"
                 @click="deleteShape($value)"
+                aria-label="Delete Shape"
+                uk-tooltip="Delete Shape"
               ></a>
             </div>
           </template>
@@ -59,11 +63,15 @@
                 href="javascript:void(0)"
                 uk-icon="icon: pencil"
                 @click="openEditScript($value)"
+                aria-label="Edit Script"
+                uk-tooltip="Edit Script"
               ></a>
               <a
                 href="javascript:void(0)"
                 uk-icon="icon: trash"
                 @click="deleteScript($value)"
+                aria-label="Delete Script"
+                uk-tooltip="Delete Script"
               ></a>
             </div>
           </template>
@@ -75,25 +83,10 @@
         <div class="uk-width-1-1 uk-flex actions">
           <div class="btn" @click="openNewEffect()">Add Effect</div>
         </div>
-        <div class="obj-list">
-          <template :for="effects" :id="$value.id">
-            <div class="obj">
-              <div>{{$value.label}}</div>
-              <a
-                href="javascript:void(0)"
-                uk-icon="icon: pencil"
-                @click="openEditEffect($value)"
-              ></a>
-              <template :if="$value.removable">
-                <a
-                  href="javascript:void(0)"
-                  uk-icon="icon: trash"
-                  @click="deleteEffect($value)"
-                ></a>
-              </template>
-            </div>
-          </template>
-        </div>
+        <folder-list
+          :items="sorted(effects)"
+          :actions="actions?.effects || []"
+        ></folder-list>
       </li>
     </template>
     <template :if="tab === 'shaders'">
@@ -116,7 +109,7 @@
     }
 
     static get observedProperties() {
-      return ["shapes", "scripts", "tab", "shaders", "effects"];
+      return ["shapes", "scripts", "tab", "shaders", "effects", "actions"];
     }
 
     connected() {
@@ -126,9 +119,47 @@
       app.state.bind(this, "shapes", (shapes) => {
         this.shapes = shapes;
       });
-      app.state.bind(this, "effects", (effects) => {
+      storage.bind(this, "effects", (effects) => {
         this.effects = [...Effects, ...(effects || [])];
       });
+
+      this.actions = {
+        effects: [
+          {
+            icon: "check",
+            class: "included",
+            label: "Show in Slots",
+            active: ($idx, $key, $value) => {
+              return !!$value.active;
+            },
+            click: ($idx, $key, $value) => {
+              this.toggleEffect($value);
+            },
+          },
+          {
+            icon: "pencil",
+            label: "Edit Effect",
+            active: ($idx, $key, $value) => {
+              return !!$value.removable;
+            },
+            click: ($idx, $key, $value) => {
+              console.log($value);
+              this.openEditEffect($value);
+            },
+          },
+          {
+            icon: "trash",
+            class: "delete",
+            label: "Delete Effect",
+            active: ($idx, $key, $value) => {
+              return !!$value.removable;
+            },
+            click: ($idx, $key, $value) => {
+              this.deleteEffect($value);
+            },
+          },
+        ],
+      };
     }
 
     tabClass(tab) {
@@ -184,17 +215,62 @@
     openEditEffect(effect) {
       let editor = document.createElement("effect-editor");
       editor.save = this.editEffect.bind(this);
+      editor.id = effect.id;
       editor.code = effect.shader;
       editor.label = effect.removable ? effect.label : `${effect.label} Copy`;
       document.body.appendChild(editor);
     }
 
-    editEffect(label, code, id) {
-      // Stub
+    async editEffect(label, code, id, path) {
+      let existing = await storage.getItem("effects", id);
+      let effect = existing || {
+        removable: true,
+        active: false,
+        effect_x: "X",
+        effect_y: "Y",
+        defaults: [0, 0],
+      };
+
+      effect.id = id;
+      effect.path = path;
+      effect.label = label;
+      effect.shader = code;
+
+      let obj = await storage.upsertItem("effects", effect);
+      app.updateEffect(obj);
+    }
+
+    async toggleEffect(effect) {
+      effect.active = !effect.active;
+      let obj = await storage.upsertItem("effects", effect);
+      app.updateEffect(effect);
     }
 
     deleteEffect(effect) {
-      // Stub
+      storage.removeItem("effects", effect);
+      app.removeEffect(effect);
+    }
+
+    sorted(items) {
+      let struct = [];
+      (items || []).map((item) => {
+        let folders = item.path.split("/");
+        let folder = struct;
+
+        folders.map((f) => {
+          if (!!f.trim()) {
+            if (!folder[f]) {
+              folder[f] = [];
+            }
+
+            folder = folder[f];
+          }
+        });
+
+        folder.push(item);
+      });
+
+      return struct;
     }
 
     popout() {

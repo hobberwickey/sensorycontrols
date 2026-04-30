@@ -9,10 +9,14 @@ class StorageManager extends ContextBlocks {
 			effects: [],
 			shaders: [],
 			projects: [],
-			ready: false,
 		});
 
 		this.store = null;
+		this.queue = [];
+
+		if (typeof window === "undefined") {
+			return;
+		}
 
 		const request = window.indexedDB.open("SensoryControls", 3);
 		request.onerror = (event) => {
@@ -20,7 +24,6 @@ class StorageManager extends ContextBlocks {
 		};
 		request.onsuccess = (event) => {
 			this.store = event.target.result;
-			this.ready = true;
 			this.init();
 		};
 
@@ -33,7 +36,6 @@ class StorageManager extends ContextBlocks {
 				let objectStore = this.store.createObjectStore(key, { keyPath: "id" });
 			});
 
-			this.ready = true;
 			this.init();
 		};
 	}
@@ -43,11 +45,31 @@ class StorageManager extends ContextBlocks {
 		this.effects = await this.get("effects");
 		this.shaders = await this.get("shaders");
 		this.projects = await this.get("projects");
+
+		this.resolveQueue();
+	}
+
+	async resolveQueue() {
+		this.queue = this.queue.filter((fn) => {
+			fn();
+			return false;
+		});
 	}
 
 	async get(key) {
 		if (!keys.includes(key)) {
 			return console.warn("Unknown storage key:", key);
+		}
+
+		if (!this.store) {
+			let response = new Promise((res, rej) => {
+				this.queue.push(async () => {
+					let objs = await this.get(key);
+					res(objs);
+				});
+			});
+
+			return response;
 		}
 
 		const request = this.store
@@ -85,7 +107,7 @@ class StorageManager extends ContextBlocks {
 		return new Promise(async (res, rej) => {
 			request.onsuccess = async (event) => {
 				this[key] = await this.get(key);
-				res();
+				res(obj);
 			};
 		});
 	}

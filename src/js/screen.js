@@ -171,17 +171,17 @@ export default class Screen {
     this.updateSlots();
   }
 
-  setEffectOrder() {
-    let effects = Effects.map((e) => e.id);
-    let used = [...this.state.effects].filter((e) => !!e);
-    let unused = effects.reduce((a, c) => {
-      if (!used.includes(c)) {
-        a.push(c);
-      }
+  // setEffectOrder() {
+  //   let effects = Effects.map((e) => e.id);
+  //   let used = [...this.state.effects].filter((e) => !!e);
+  //   let unused = effects.reduce((a, c) => {
+  //     if (!used.includes(c)) {
+  //       a.push(c);
+  //     }
 
-      return a;
-    }, []);
-  }
+  //     return a;
+  //   }, []);
+  // }
 
   play() {
     if (this.isPlaying) {
@@ -217,9 +217,8 @@ export default class Screen {
     state.elements = this.videos;
 
     for (let i = 0; i < this.scripts.length; i++) {
-      let { fn, idx } = this.scripts[i];
+      let { fn, script: target } = this.scripts[i];
 
-      let target = state.scripts[idx];
       let values = target.values;
       let disabled = target.disabled;
 
@@ -283,16 +282,42 @@ export default class Screen {
       gl.viewport(0, 0, videoEl.videoWidth, videoEl.videoHeight);
       gl.useProgram(attrs.main.program);
 
-      this.drawShapes(gl, videoEl, j, attrs.main, shapes, [0, 0], -1, true);
+      this.drawShapes(
+        gl,
+        videoEl,
+        j,
+        attrs.main,
+        shapes,
+        [0, 0],
+        -1,
+        true,
+        state.elapsed,
+      );
     }
 
-    for (var i = 0; i < effects.length; i++) {
-      let { fx, idx } = effects[i];
-      let target = state.effects[idx];
+    for (let i = 0; i < effects.length; i++) {
+      let { fx } = effects[i];
+      let target = null;
 
-      gl.useProgram(fx.program);
+      for (let j = 0; j < state.effects.length; j++) {
+        if (state.effects[j].id === fx.id) {
+          target = state.effects[j];
+          break;
+        }
+      }
 
-      for (var j = videosLen; j >= 0; j--) {
+      if (!target) {
+        continue;
+      }
+
+      if (gl.isProgram(fx.program)) {
+        gl.useProgram(fx.program);
+      } else {
+        console.log("Deleted");
+        continue;
+      }
+
+      for (let j = videosLen; j >= 0; j--) {
         let video = videos[j];
 
         let videoEl = this.videos[j];
@@ -317,7 +342,17 @@ export default class Screen {
         gl.viewport(0, 0, videoEl.videoWidth, videoEl.videoHeight);
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        this.drawShapes(gl, videoEl, j, fx, shapes, vals, -1, true);
+        this.drawShapes(
+          gl,
+          videoEl,
+          j,
+          fx,
+          shapes,
+          vals,
+          -1,
+          true,
+          state.elapsed,
+        );
 
         activeBuffers[j] = drawBuffer;
       }
@@ -339,13 +374,34 @@ export default class Screen {
       gl.viewport(0, 0, this.options.width, this.options.height);
       // gl.viewport(0, 0, videoEl.videoWidth, videoEl.videoHeight);
       gl.useProgram(attrs.main.program);
-      this.drawShapes(gl, videoEl, j, attrs.main, shapes, [0, 0], 1);
+      this.drawShapes(
+        gl,
+        videoEl,
+        j,
+        attrs.main,
+        shapes,
+        [0, 0],
+        1,
+        false,
+        state.elapsed,
+      );
     }
   }
 
-  drawShapes(gl, video, idx, attrs, shapes, values, flip, ignoreOpacity) {
+  drawShapes(
+    gl,
+    video,
+    idx,
+    attrs,
+    shapes,
+    values,
+    flip,
+    ignoreOpacity,
+    elapsed,
+  ) {
     gl.uniform2fv(attrs.uniforms.effect, values);
     gl.uniform1f(attrs.uniforms.flip, flip);
+    gl.uniform1f(attrs.uniforms.elapsed, elapsed / 1000);
     gl.uniform2fv(attrs.uniforms.dimensions, [
       1 / video.videoWidth,
       1 / video.videoHeight,
@@ -506,6 +562,7 @@ export default class Screen {
           opacity: gl.getUniformLocation(program, "u_opacity"),
           effect: gl.getUniformLocation(program, "u_effect"),
           dimensions: gl.getUniformLocation(program, "u_dimensions"),
+          elapsed: gl.getUniformLocation(program, "u_elapsed"),
 
           quad: gl.getUniformLocation(program, "u_quad"),
           translate: gl.getUniformLocation(program, "u_translate"),
@@ -545,15 +602,11 @@ export default class Screen {
       this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
       // let effects = this.state.effects;
-      for (var i = 0; i < Effects.length; i++) {
-        let effect = Effects[i];
+      for (var i = 0; i < this.state.effects.length; i++) {
+        let effect = this.state.effects[i];
+
         this.attrs.effects.push(
-          this.createProgram(
-            effect.id,
-            this.gl,
-            vertexShaderSrc,
-            effect.shader,
-          ),
+          this.createProgram(effect.id, this.gl, vertexShaderSrc, effect.code),
         );
       }
     }
@@ -759,10 +812,10 @@ export default class Screen {
           ScriptTemplate(code),
         );
 
-        let idx = this.state.scripts.findIndex((s) => (s.id = slot.target.id));
+        let obj = this.state.scripts.find((s) => (s.id = slot.target.id));
 
         return {
-          idx: idx,
+          script: obj,
           fn: fn,
         };
       });
@@ -778,14 +831,16 @@ export default class Screen {
       ...effects.filter((effect) => {
         return !slots.find((slot) => slot?.target?.id === effect.id);
       }),
-    ].map((e) => {
-      let idx = this.state.effects.findIndex((f) => f.id === e.id);
+    ]
+      .map((e) => {
+        let obj = this.state.effects.find((f) => f.id === e.id);
 
-      return {
-        idx: idx,
-        fx: this.attrs.effects.find((fx) => fx.id === e.id),
-      };
-    });
+        return {
+          effect: obj,
+          fx: this.attrs.effects.find((fx) => fx.id === e.id),
+        };
+      })
+      .filter((e) => e.idx !== -1);
 
     slots.map((slot, idx) => {
       if (slot?.type !== "script") {
@@ -794,9 +849,82 @@ export default class Screen {
     });
   }
 
-  // updateScriptValues(idx, values) {}
+  createEffect(effect) {
+    if (!effect.code) {
+      return { error: "No Code" };
+    }
 
-  // updateEffectValues(idx, values) {}
+    let existing = this.effects.findIndex((fx) => {
+      return fx.id === effect.id;
+    });
+
+    if (existing !== -1) {
+      return this.updateEffect(effect, idx);
+    }
+
+    let program = this.createProgram(
+      effect.id,
+      this.gl,
+      vertexShaderSrc,
+      effect.code,
+    );
+
+    if (program !== null) {
+      this.attrs.effects.push(program);
+    }
+
+    this.updateSlots();
+  }
+
+  updateEffect(effect, idx) {
+    console.log("Updating Effect", idx, effect);
+
+    if (!effect.code) {
+      return { error: "No Code" };
+    }
+
+    let existing = this.effects.findIndex((fx) => {
+      return fx.id === effect.id;
+    });
+
+    if (existing !== -1) {
+      return this.updateEffect(effect, idx);
+    }
+
+    let program = this.createProgram(
+      effect.id,
+      this.gl,
+      vertexShaderSrc,
+      effect.code,
+    );
+
+    if (program !== null) {
+      let old = this.attrs.effects[idx];
+
+      this.attrs.effects[idx] = program;
+      this.effects.map((f) => {
+        if (f.fx.id === effect.id) {
+          f.fx = program;
+        }
+      });
+
+      this.gl.deleteProgram(old.program);
+    }
+
+    this.updateSlots();
+  }
+
+  removeEffect(effect) {
+    let idx = this.attrs.effects.findIndex((fx) => {
+      return fx.id === effect.id;
+    });
+
+    let fx = this.attrs.effects[idx];
+
+    this.updateSlots();
+    this.attrs.effects.splice(idx, 1);
+    this.gl.deleteProgram(fx.program);
+  }
 
   setClock(clock, bpm) {
     if (clock === "default") {

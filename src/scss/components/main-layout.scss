@@ -31,19 +31,15 @@ main-layout {
 			padding-right: 30px;
 
 			#save_btn {
-				border: solid 1px;
-				border-radius: 30px;
-				padding: 3px;
 				text-align: center;
 				margin: 0px 10px;
+				width: 35px;
+				height: 35px;
 
-				transition:
-					background-color 300ms ease,
-					color 300ms ease;
+				transition: color 300ms ease;
 
 				&.saved {
-					background-color: green;
-					color: white !important;
+					color: green !important;
 				}
 			}
 
@@ -56,11 +52,12 @@ main-layout {
 			#open_menu {
 				text-align: center;
 				margin: 0px 10px;
+				width: 35px;
+				height: 35px;
+
 				svg {
 					top: 2px;
 					position: relative;
-					width: 28px;
-					height: 28px;
 				}
 			}
 		}
@@ -69,13 +66,19 @@ main-layout {
 		width: 360px;
 		height: 100%;
 		position: absolute;
-		top: 0;
+		top: 0px;
 		left: 0px;
 		z-index: 2;
-		background-color: rgba(255, 255, 255, 0.75);
-		top: 0px;
+		background-color: rgba(255, 255, 255, 1);
 		padding-top: 80px;
-		padding-bottom: 30px;
+		padding-bottom: 0px;
+		box-sizing: border-box;
+
+		side-menu {
+			display: flex;
+			flex-direction: column;
+			max-height: 100%;
+		}
 
 		.preview {
 			position: relative;
@@ -156,8 +159,13 @@ main-layout {
 		}
 
 		.tab-content {
+			flex: 1;
+			overflow: auto;
+			margin: 0;
+
 			.actions {
 				display: flex;
+				margin-bottom: 10px;
 
 				& > div {
 					flex: 1;
@@ -179,6 +187,29 @@ main-layout {
 
 					div {
 						flex: 1;
+					}
+
+					a {
+						margin: 0px 5px;
+
+						&.included {
+							border: solid 1px;
+							border-radius: 30px;
+							width: 20px;
+							height: 20px;
+
+							svg {
+								position: relative;
+								left: -1px;
+								top: 1px;
+							}
+						}
+
+						&.inactive {
+							svg {
+								display: none;
+							}
+						}
 					}
 				}
 			}

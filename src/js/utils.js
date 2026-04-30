@@ -1,3 +1,17 @@
+export const vertext_shader = `
+  attribute vec2 a_position;
+  attribute vec2 a_texcoord;
+
+  uniform float u_flipY;
+
+  varying vec2 v_texcoord;
+  
+  void main() {
+    gl_Position = vec4(a_position * vec2(1, u_flipY), 0.0, 1.0);
+    v_texcoord = a_texcoord;
+  }
+`;
+
 export const gen_id = () => {
 	return (Math.random() * 1000000) | 0;
 };
@@ -25,4 +39,20 @@ export const gen_slug = (str) => {
 
 export const capitalize = (str) => {
 	return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+export const validate_shader = (fragment_shader) => {
+	let canvas = document.createElement("canvas");
+	let gl = canvas.getContext("webgl");
+	let shader = gl.createShader(gl.FRAGMENT_SHADER);
+
+	gl.shaderSource(shader, fragment_shader);
+	gl.compileShader(shader);
+
+	let success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+	if (success) {
+		return null;
+	} else {
+		return gl.getShaderInfoLog(shader);
+	}
 };

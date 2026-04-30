@@ -31,16 +31,14 @@ main-layout header .right-nav {
   padding-right: 30px;
 }
 main-layout header .right-nav #save_btn {
-  border: solid 1px;
-  border-radius: 30px;
-  padding: 3px;
   text-align: center;
   margin: 0px 10px;
-  transition: background-color 300ms ease, color 300ms ease;
+  width: 35px;
+  height: 35px;
+  transition: color 300ms ease;
 }
 main-layout header .right-nav #save_btn.saved {
-  background-color: green;
-  color: white !important;
+  color: green !important;
 }
 main-layout header .right-nav #project_name {
   margin: 0px 10px;
@@ -50,24 +48,29 @@ main-layout header .right-nav #project_name {
 main-layout header .right-nav #open_menu {
   text-align: center;
   margin: 0px 10px;
+  width: 35px;
+  height: 35px;
 }
 main-layout header .right-nav #open_menu svg {
   top: 2px;
   position: relative;
-  width: 28px;
-  height: 28px;
 }
 main-layout .sidebar {
   width: 360px;
   height: 100%;
   position: absolute;
-  top: 0;
+  top: 0px;
   left: 0px;
   z-index: 2;
-  background-color: rgba(255, 255, 255, 0.75);
-  top: 0px;
+  background-color: rgb(255, 255, 255);
   padding-top: 80px;
-  padding-bottom: 30px;
+  padding-bottom: 0px;
+  box-sizing: border-box;
+}
+main-layout .sidebar side-menu {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
 }
 main-layout .sidebar .preview {
   position: relative;
@@ -129,8 +132,14 @@ main-layout .sidebar .tabs > li a {
   color: #888;
   text-decoration: none;
 }
+main-layout .sidebar .tab-content {
+  flex: 1;
+  overflow: auto;
+  margin: 0;
+}
 main-layout .sidebar .tab-content .actions {
   display: flex;
+  margin-bottom: 10px;
 }
 main-layout .sidebar .tab-content .actions > div {
   flex: 1;
@@ -150,6 +159,23 @@ main-layout .sidebar .tab-content .obj-list > div {
 }
 main-layout .sidebar .tab-content .obj-list > div div {
   flex: 1;
+}
+main-layout .sidebar .tab-content .obj-list > div a {
+  margin: 0px 5px;
+}
+main-layout .sidebar .tab-content .obj-list > div a.included {
+  border: solid 1px;
+  border-radius: 30px;
+  width: 20px;
+  height: 20px;
+}
+main-layout .sidebar .tab-content .obj-list > div a.included svg {
+  position: relative;
+  left: -1px;
+  top: 1px;
+}
+main-layout .sidebar .tab-content .obj-list > div a.inactive svg {
+  display: none;
 }
 main-layout .controls {
   z-index: 1;
@@ -551,7 +577,8 @@ output-screen .screen canvas {
   background-color: black;
 }
 
-script-editor {
+script-editor,
+effect-editor {
   position: fixed;
   width: 100vw;
   height: 100vh;
@@ -560,7 +587,8 @@ script-editor {
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 9999;
 }
-script-editor .modal {
+script-editor .modal,
+effect-editor .modal {
   position: absolute;
   width: 90%;
   height: 80%;
@@ -570,16 +598,19 @@ script-editor .modal {
   padding: 20px 20px 60px 20px;
   box-sizing: border-box;
 }
-script-editor .modal .container {
+script-editor .modal .container,
+effect-editor .modal .container {
   max-width: 100%;
   max-height: 100%;
 }
-script-editor .modal .container .dialog {
+script-editor .modal .container .dialog,
+effect-editor .modal .container .dialog {
   width: 100%;
   height: 100%;
   display: flex;
 }
-script-editor .modal .container .dialog .sidebar {
+script-editor .modal .container .dialog .sidebar,
+effect-editor .modal .container .dialog .sidebar {
   width: 40%;
   height: 100%;
   overflow: auto;
@@ -588,17 +619,22 @@ script-editor .modal .container .dialog .sidebar {
   padding-right: 30px;
   box-sizing: border-box;
 }
-script-editor .modal .container .dialog .sidebar .api-docs h2 {
+script-editor .modal .container .dialog .sidebar .api-docs h2,
+effect-editor .modal .container .dialog .sidebar .api-docs h2 {
   margin-bottom: 31px;
 }
 script-editor .modal .container .dialog .sidebar pre,
-script-editor .modal .container .dialog .sidebar code {
+script-editor .modal .container .dialog .sidebar code,
+effect-editor .modal .container .dialog .sidebar pre,
+effect-editor .modal .container .dialog .sidebar code {
   white-space: pre-wrap;
 }
-script-editor .modal .container .dialog .sidebar .example pre {
+script-editor .modal .container .dialog .sidebar .example pre,
+effect-editor .modal .container .dialog .sidebar .example pre {
   margin-bottom: 0px;
 }
-script-editor .modal .container .dialog .sidebar label {
+script-editor .modal .container .dialog .sidebar label,
+effect-editor .modal .container .dialog .sidebar label {
   font-weight: bold;
   width: 100%;
   display: block;
@@ -606,19 +642,23 @@ script-editor .modal .container .dialog .sidebar label {
   padding: 7px 16px;
   box-sizing: border-box;
 }
-script-editor .modal .container .dialog .sidebar p {
+script-editor .modal .container .dialog .sidebar p,
+effect-editor .modal .container .dialog .sidebar p {
   font-size: 14px;
   padding: 0px 16px;
   margin: 20px 0px;
 }
-script-editor .modal .container .dialog .sidebar ul li {
+script-editor .modal .container .dialog .sidebar ul li,
+effect-editor .modal .container .dialog .sidebar ul li {
   border: solid 1px var(--fg-color);
 }
-script-editor .modal .container .dialog .sidebar ul li a.uk-accordion-title {
+script-editor .modal .container .dialog .sidebar ul li a.uk-accordion-title,
+effect-editor .modal .container .dialog .sidebar ul li a.uk-accordion-title {
   padding: 10px;
   background-color: var(--fg-color);
 }
-script-editor .modal .container .dialog .sidebar ul li a.uk-accordion-title:before {
+script-editor .modal .container .dialog .sidebar ul li a.uk-accordion-title:before,
+effect-editor .modal .container .dialog .sidebar ul li a.uk-accordion-title:before {
   content: "";
   width: 1em;
   height: 1em;
@@ -630,60 +670,76 @@ script-editor .modal .container .dialog .sidebar ul li a.uk-accordion-title:befo
   background-size: contain;
   margin-top: 0.2em;
 }
-script-editor .modal .container .dialog .sidebar ul li.uk-open a:before {
+script-editor .modal .container .dialog .sidebar ul li.uk-open a:before,
+effect-editor .modal .container .dialog .sidebar ul li.uk-open a:before {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2213%22%20height%3D%2213%22%20viewBox%3D%220%200%2013%2013%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%3Crect%20fill%3D%22%23666%22%20width%3D%2213%22%20height%3D%221%22%20x%3D%220%22%20y%3D%226%22%20%2F%3E%0A%3C%2Fsvg%3E");
 }
-script-editor .modal .container .dialog .sidebar ul li ul {
+script-editor .modal .container .dialog .sidebar ul li ul,
+effect-editor .modal .container .dialog .sidebar ul li ul {
   padding-left: 16px;
 }
-script-editor .modal .container .dialog .sidebar .methods li {
+script-editor .modal .container .dialog .sidebar .methods li,
+effect-editor .modal .container .dialog .sidebar .methods li {
   border: solid 1px var(--fg-color);
 }
-script-editor .modal .container .dialog .sidebar .methods li .uk-accordion-content {
+script-editor .modal .container .dialog .sidebar .methods li .uk-accordion-content,
+effect-editor .modal .container .dialog .sidebar .methods li .uk-accordion-content {
   margin-top: 0px;
 }
-script-editor .modal .container .dialog .editor {
+script-editor .modal .container .dialog .editor,
+effect-editor .modal .container .dialog .editor {
   width: 60%;
   max-height: 100%;
   display: flex;
   flex-direction: column;
 }
-script-editor .modal .container .dialog .editor .label {
+script-editor .modal .container .dialog .editor .label,
+effect-editor .modal .container .dialog .editor .label {
   margin-bottom: 10px;
 }
-script-editor .modal .container .dialog .editor .label input {
+script-editor .modal .container .dialog .editor .label input,
+effect-editor .modal .container .dialog .editor .label input {
   width: 300px;
 }
-script-editor .modal .container .dialog .editor .error {
+script-editor .modal .container .dialog .editor .error,
+effect-editor .modal .container .dialog .editor .error {
   color: red;
   margin-bottom: 10px;
 }
-script-editor .modal .container .dialog .editor .error.hidden {
+script-editor .modal .container .dialog .editor .error.hidden,
+effect-editor .modal .container .dialog .editor .error.hidden {
   display: none;
 }
-script-editor .modal .container .dialog .editor .code-box {
+script-editor .modal .container .dialog .editor .code-box,
+effect-editor .modal .container .dialog .editor .code-box {
   flex: 1;
 }
-script-editor .modal .container .dialog .editor .code-box .editor {
+script-editor .modal .container .dialog .editor .code-box .editor,
+effect-editor .modal .container .dialog .editor .code-box .editor {
   height: 100%;
   width: 100%;
   border: solid 1px;
 }
-script-editor .modal .container .dialog .editor .editor-header form {
+script-editor .modal .container .dialog .editor .editor-header form,
+effect-editor .modal .container .dialog .editor .editor-header form {
   display: flex;
 }
-script-editor .modal .container .dialog .editor .editor-header form > div {
+script-editor .modal .container .dialog .editor .editor-header form > div,
+effect-editor .modal .container .dialog .editor .editor-header form > div {
   flex: 1;
   padding: 0px 10px;
 }
-script-editor .modal .container .dialog .editor .editor-header form > div label {
+script-editor .modal .container .dialog .editor .editor-header form > div label,
+effect-editor .modal .container .dialog .editor .editor-header form > div label {
   padding-bottom: 10px;
 }
-script-editor .modal .container .footer {
+script-editor .modal .container .footer,
+effect-editor .modal .container .footer {
   margin-top: 10px;
   display: flex;
 }
-script-editor .modal .container .footer .fit {
+script-editor .modal .container .footer .fit,
+effect-editor .modal .container .footer .fit {
   flex: 1;
 }
 
@@ -747,6 +803,117 @@ main-menu .obj-list > div div {
 }
 main-menu .obj-list > div a {
   margin: 0px 5px;
+  cursor: pointer;
+}
+
+folder-list {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+}
+folder-list .folder > label:before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid;
+  vertical-align: middle;
+  position: relative;
+  left: 2px;
+  top: 0px;
+  margin-left: -10px;
+  margin-right: 10px;
+  display: inline-block;
+  font-weight: bold;
+  pointer-events: none;
+}
+folder-list .folder > label {
+  width: 100%;
+  display: inline-block;
+  padding-left: 20px;
+  position: relative;
+  border-bottom: solid 1px #ccc;
+  cursor: pointer;
+}
+folder-list .folder > label span {
+  display: inline-block;
+  vertical-align: middle;
+  pointer-events: none;
+}
+folder-list .folder folder-list {
+  padding-left: 10px;
+}
+folder-list .folder folder-list > .content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s ease-in-out;
+  overflow: hidden;
+}
+folder-list .folder folder-list > .content > .inner {
+  min-height: 0;
+}
+folder-list .folder.expanded > label:before {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 8px solid;
+  left: 0px;
+  top: 2px;
+}
+folder-list .folder.expanded > folder-list > .content {
+  grid-template-rows: 1fr;
+}
+folder-list .object {
+  display: flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-bottom: solid 1px #ccc;
+}
+folder-list .object label {
+  flex: 1;
+}
+folder-list .object label span {
+  display: inline-block;
+  vertical-align: middle;
+}
+folder-list .object folder-list-action a {
+  margin: 0px 5px;
+}
+folder-list .object folder-list-action .included {
+  border: solid 1px;
+  border-radius: 30px;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+}
+folder-list .object folder-list-action .included svg {
+  display: none;
+  position: relative;
+  left: -1px;
+  top: 1px;
+}
+folder-list .object folder-list-action .included.active svg {
+  display: block;
+}
+folder-list .object folder-list-action .delete {
+  display: none;
+}
+folder-list .object folder-list-action .delete.active {
+  display: block;
+}
+
+app-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 20px;
+  height: 20px;
+}
+app-icon[clickable] {
+  cursor: pointer;
+}
+app-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 :root {

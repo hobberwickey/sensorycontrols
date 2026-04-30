@@ -8,8 +8,17 @@ import { Video } from "./video";
 import { Shape } from "./shape";
 
 import { gen_id, capitalize } from "./utils";
+import { storage } from "./storage.js";
 
-const sync_chain = ["sync_start", "sync_state", "sync_videos", "sync_end"];
+const sync_chain = [
+	"sync_start",
+	"sync_ready",
+	"sync_state",
+	"sync_videos",
+	"sync_video",
+	"sync_media",
+	"sync_end",
+];
 
 /**
  * Class for storing and syncing the application state across
@@ -17,7 +26,7 @@ const sync_chain = ["sync_start", "sync_state", "sync_videos", "sync_end"];
  * through the use of a SharedWorker object
  */
 export class State extends ContextBlocks {
-	constructor(defaults) {
+	constructor(primary) {
 		super({
 			loading: null,
 			files: new Array(6).fill(null),
@@ -27,10 +36,13 @@ export class State extends ContextBlocks {
 			},
 			slots: new Array(12).fill().map((_, idx) => new Slot(idx)),
 			scripts: new Array(12).fill().map((_, idx) => new Script(idx)),
-			effects: Effects.map((e) => new Effect(e)),
+			effects: [],
 			videos: new Array(6).fill().map((_, idx) => new Video(idx)),
 			shapes: [new Shape({ label: "Quad 1", type: "quad" })],
 		});
+
+		// There should only ever be one primary instance of the state
+		this.primary = primary || false;
 
 		// For syncing
 		this.loading_time = 0;
@@ -39,6 +51,9 @@ export class State extends ContextBlocks {
 		// Set these to null initially
 		this.worker = null;
 		this.port = null;
+
+		// Shouldn't receive any updates until it's synced
+		this.syncing = true;
 
 		// Should be unlocked initially
 		this.locked = false;
@@ -70,7 +85,15 @@ export class State extends ContextBlocks {
 			});
 
 			this.port.start();
-			this.port.postMessage(JSON.stringify({ action: "sync_start" }));
+			this.port.postMessage(
+				JSON.stringify({
+					action: "sync_start",
+					data: { primary: this.primary },
+				}),
+			);
+		} else {
+			// This is in the worker
+			this.syncing = false;
 		}
 
 		// If the files have changed, broadcast the new file
@@ -111,6 +134,10 @@ export class State extends ContextBlocks {
 			this.post("update_shapes", { shapes });
 		});
 
+		this.listen("effects", (effects) => {
+			this.post("update_effects", { effects });
+		});
+
 		// Add events to the script objects
 		this.scripts.map((script, idx) => {
 			this.addScriptEvents(script, idx);
@@ -137,6 +164,19 @@ export class State extends ContextBlocks {
 		});
 	}
 
+	// Only for the primary instance, after the sync_end
+	// message is recieved, load everything from storage
+	// and then send the sync_ready message
+	async init() {
+		// Load up all the Effects
+		let customEffects = await storage.get("effects");
+		[...Effects, ...customEffects].map((effect) => {
+			this.addEffect(effect);
+		});
+
+		this.post("sync_ready");
+	}
+
 	// Broadcasts updates to the shared worker
 	post(action, updates, data) {
 		if (this.locked || !this.port) {
@@ -150,6 +190,17 @@ export class State extends ContextBlocks {
 				data,
 			}),
 		);
+	}
+
+	// Adds a shape, and attaches events
+	addEffect(e) {
+		let idx = this.effects.length;
+		let effect = new Effect({ id: e.id }, e);
+
+		this.addEffectEvents(effect, idx);
+		this.effects = [...this.effects, effect];
+
+		return effect;
 	}
 
 	// Adds a shape, and attaches events
@@ -241,10 +292,18 @@ export class State extends ContextBlocks {
 
 	// Updates this state's values from an update event
 	handleUpdate(msg) {
+		if (this.syncing) {
+			return;
+		}
+
 		let { action, updates, data } = msg;
 
 		if (action === "update_shapes") {
 			return this.handleShapeUpdates(msg);
+		}
+
+		if (action === "update_effects") {
+			return this.handleEffectUpdates(msg);
 		}
 
 		let target = null;
@@ -317,6 +376,28 @@ export class State extends ContextBlocks {
 		];
 	}
 
+	handleEffectUpdates(msg) {
+		let { action, updates, data } = msg;
+		let { effects } = updates;
+
+		let deletes = this.effects.filter(
+			(e) => !effects.find((ef) => ef.id === e.id),
+		);
+
+		let additions = effects
+			.filter((e) => !this.effects.find((ef) => ef.id === e.id))
+			.map((e) => {
+				let effect = new Effect({ id: e.id }, e);
+				this.addEffectEvents(effect);
+				return effect;
+			});
+
+		this.effects = [
+			...this.effects.filter((e) => !deletes.find((ef) => ef.id == e.id)),
+			...additions,
+		];
+	}
+
 	handleSync(msg) {
 		let { action, updates, data } = msg;
 
@@ -347,11 +428,25 @@ export class State extends ContextBlocks {
 			}
 		}
 
+		if (action === "sync_video") {
+			this.loading = updates.loading;
+			// TODO: do something with the loading_time
+		}
+
+		if (action === "sync_media") {
+			this.files = this.files.toSpliced(data.idx, 1, updates.media);
+		}
+
 		if (action === "sync_end") {
 			this.loading_index = 0;
 			this.loading_time = 0;
 			this.loading = null;
 			this.locked = false;
+			this.syncing = false;
+
+			if (this.primary) {
+				this.init();
+			}
 		}
 	}
 
@@ -406,10 +501,14 @@ export class State extends ContextBlocks {
 		this.effects = effects.map((e, idx) => {
 			let effect = this.effects.find((fx) => fx.id === e.id);
 
-			effect.type = e.type;
-			effect.label = e.label;
-			effect.values = e.values;
-			effect.code = e.code;
+			if (!!effect) {
+				effect.type = e.type;
+				effect.label = e.label;
+				effect.values = e.values;
+				effect.code = e.code;
+			} else {
+				effect = this.addEffect(e);
+			}
 
 			return effect;
 		});

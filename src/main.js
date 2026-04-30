@@ -10,3 +10,6 @@ import ScriptEditor from "./components/script-editor.html";
 import EffectEditor from "./components/effect-editor.html";
 import APIDocs from "./components/api-docs.html";
 import ConfirmationModal from "./components/confirmation-modal.html";
+import FolderList from "./components/folder-list.html";
+import FolderListAction from "./components/folder-list-action.html";
+import AppIcon from "./components/app-icon.html";

@@ -73,6 +73,44 @@
         }
       });
 
+      /****** Handling Effect Code Updates ******/
+      // Listen for added effects, and effect code updates then
+      // create/update the program in the screen
+      this.state.listen("effects", (effects, oldEffects) => {
+        let additions = effects.filter(
+          (e) => !oldEffects.find((ef) => ef.id === e.id),
+        );
+
+        let deletions = oldEffects.filter(
+          (e) => !effects.find((ef) => ef.id === e.id),
+        );
+
+        additions.map((e, idx) => {
+          e.listen("code", (code) => {
+            if (code !== "") {
+              this.screen.updateEffect(e, this.state.effects.length - 1 + idx);
+            }
+          });
+
+          if (e.code !== "") {
+            this.screen.createEffect(e);
+          }
+        });
+
+        deletions.map((e, idx) => {
+          this.screen.removeEffect(e);
+        });
+      });
+
+      this.state.effects.map((e, idx) => {
+        e.listen("code", (code, oldCode) => {
+          if (code !== "") {
+            this.screen.updateEffect(e, idx);
+          }
+        });
+      });
+      /****** End Handling Effect Code Updates ******/
+
       this.state.slots.map((s) => {
         s.listen("target", () => {
           if (!this.screen) {

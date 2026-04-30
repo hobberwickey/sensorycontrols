@@ -4,27 +4,28 @@
       <h2 class="fancy">Sensory Controls</h2>
     </div>
     <div class="right-nav">
-      <a
+      <app-icon
         @click="save()"
         :class='saved ? "saved" : ""'
+        :icon="'check-circle'"
         id="save_btn"
-        href="javascript:void(0)"
-        uk-icon="icon: check"
         aria-label="Save Project"
         uk-tooltip="Save Project"
-      ></a>
+        clickable
+      ></app-icon>
+
       <input
         id="project_name"
         type="text"
         :value="name"
         @input="updateName($event)"
       />
-      <a
+      <app-icon
         id="open_menu"
-        uk-icon="icon: menu"
+        :icon="'menu-hamburger'"
         @click="openMenu($event)"
         aria-label="Open Menu"
-      ></a>
+      ></app-icon>
       <main-menu></main-menu>
     </div>
   </header>

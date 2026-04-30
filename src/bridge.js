@@ -2,9 +2,18 @@ import { State } from "./js/state";
 
 let ports = [];
 let state = new State();
-let sync_chain = ["sync_start", "sync_state", "sync_videos", "sync_end"];
+let sync_chain = [
+  "sync_start",
+  "sync_ready",
+  "sync_state",
+  "sync_videos",
+  "sync_end",
+];
 
 let video_positions = [0, 0, 0, 0, 0, 0];
+
+let ready = false;
+let queue = [];
 
 onconnect = function (e) {
   let port = e.ports[0];
@@ -13,29 +22,57 @@ onconnect = function (e) {
   port.addEventListener("message", function (e) {
     // Keep the state updated
     if (typeof e.data !== "object") {
-      let data = JSON.parse(e.data);
-      let { action, updates } = data;
+      let msg = JSON.parse(e.data);
+      let { action, updates, data } = msg;
 
       if (sync_chain.includes(action)) {
+        console.log(action);
+
         if (action === "sync_start") {
-          e.target.postMessage(
+          // If this is the primary port, then we just end the sync
+          // and wait for the sync_ready message from the thread
+          // to unqueue any other syncs
+          if (data.primary) {
+            return e.target.postMessage(
+              JSON.stringify({
+                action: "sync_end",
+              }),
+            );
+          }
+
+          if (!ready) {
+            return queue.push(e.target);
+          }
+
+          return e.target.postMessage(
             JSON.stringify({
               action: "sync_start",
             }),
           );
+        }
+
+        if (action === "sync_ready") {
+          ready = true;
+
+          let p;
+          while ((p = queue.pop())) {
+            p.postMessage(
+              JSON.stringify({
+                action: "sync_start",
+              }),
+            );
+          }
 
           return;
         }
 
         if (action === "sync_state") {
-          e.target.postMessage(
+          return e.target.postMessage(
             JSON.stringify({
               action: "sync_state",
               updates: state,
             }),
           );
-
-          return;
         }
 
         if (action === "sync_videos") {
@@ -44,7 +81,7 @@ onconnect = function (e) {
           if (state.files[idx] instanceof File) {
             e.target.postMessage(
               JSON.stringify({
-                action: "update_state",
+                action: "sync_video",
                 updates: {
                   loading: idx,
                   loading_time: video_positions[idx],
@@ -56,7 +93,7 @@ onconnect = function (e) {
           } else if (state.files[idx] !== null) {
             e.target.postMessage(
               JSON.stringify({
-                action: "update_media",
+                action: "sync_media",
                 updates: {
                   media: state.files[idx],
                 },
@@ -67,29 +104,23 @@ onconnect = function (e) {
             );
           }
 
-          e.target.postMessage(
+          return e.target.postMessage(
             JSON.stringify({
               action: "sync_videos",
               updates: { idx },
             }),
           );
-
-          return;
         }
 
         if (action === "sync_end") {
-          e.target.postMessage(
+          return e.target.postMessage(
             JSON.stringify({
               action: "sync_end",
             }),
           );
-
-          return;
         }
       } else {
-        console.log(data);
-
-        state.handleUpdate(data);
+        state.handleUpdate(msg);
       }
     } else {
       if (state.loading !== null) {

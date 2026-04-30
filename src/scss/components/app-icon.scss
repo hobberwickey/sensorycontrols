@@ -1,0 +1,15 @@
+app-icon {
+	display: inline-block;
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+
+	&[clickable] {
+		cursor: pointer;
+	}
+
+	svg {
+		width: 100%;
+		height: 100%;
+	}
+}

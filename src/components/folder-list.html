@@ -1,0 +1,86 @@
+<template>
+  <div class="content">
+    <div class="inner">
+      <template :for="folders || []" :id="$value.key">
+        <div class="folder">
+          <label @click="toggle($event)"
+            ><span uk-icon="folder"></span> <span>{{$value.key}}</span></label
+          >
+          <folder-list :items="$value.value" :actions="actions"></folder-list>
+        </div>
+      </template>
+      <template :for="files || []" :id="obj.value.id" $idx="index" $value="obj">
+        <div class="object">
+          <label
+            ><span uk-icon="hashtag"></span>
+            <span>{{obj.value.label}}</span></label
+          >
+          <template :for="actions" :id="$idx">
+            <folder-list-action
+              :options="$value"
+              :idx="index"
+              :key="$key"
+              :value="obj.value"
+            ></folder-list-action>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</template>
+
+<script>
+  class FolderList extends BuildingBlocks {
+    constructor() {
+      super();
+    }
+
+    static get observedProperties() {
+      return ["items", "folders", "files", "actions"];
+    }
+
+    connected() {
+      this.listen("items", (items) => {
+        this.sort();
+      });
+
+      this.sort();
+    }
+
+    toggle(e) {
+      e.stopPropagation();
+      e.target.parentNode.classList.toggle("expanded");
+    }
+
+    sort() {
+      let keys = Object.keys(this.items || []);
+      let folders = [];
+      let files = [];
+      let sorted = [];
+
+      keys.map((k) => {
+        if (Array.isArray(this.items[k])) {
+          folders.push(k);
+        } else {
+          files.push(k);
+        }
+      });
+
+      this.files = [...files]
+        .sort((a, b) => +a - +b)
+        .map((k) => {
+          return {
+            key: k,
+            value: this.items[k],
+          };
+        });
+
+      this.folders = [...folders].sort().map((k) => {
+        return {
+          key: k,
+          value: this.items[k],
+        };
+      });
+    }
+  }
+</script>

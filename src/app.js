@@ -14,11 +14,12 @@ class App extends ContextBlocks {
 			id: gen_id(),
 			name: "New Project",
 			saved: false,
-			state: new State(),
+			state: new State(true),
 			midi: new MIDI(),
 		});
 
 		this.screen = null;
+		// this.init();
 	}
 
 	updateSelected(type, idx) {
@@ -96,7 +97,8 @@ class App extends ContextBlocks {
 	setSlot(idx, effect) {
 		let slots = this.state.slots;
 
-		// slot.effect = effect;
+		let old = slots[idx].target;
+
 		if (effect === null) {
 			slots[idx].target = null;
 		} else if (effect === "__script") {
@@ -106,6 +108,14 @@ class App extends ContextBlocks {
 			slots[idx].target =
 				this.state.effects.find((e) => e.id === effect) || null;
 			slots[idx].target.values = new Array(6).fill(null).map((v) => [0, 0]);
+		}
+
+		if (old !== null && old !== slots[idx].target) {
+			if (old.type === "effect") {
+				old.values = new Array(6).fill(null).map((v) => [0, 0]);
+			} else {
+				old.values = [0, 0];
+			}
 		}
 
 		this.state.slots = [...this.state.slots];
@@ -124,6 +134,45 @@ class App extends ContextBlocks {
 		}
 
 		this.state.slots = [...this.state.slots];
+	}
+
+	updateEffect(effect) {
+		let existingIdx = this.state.effects.findIndex((e) => e.id === effect.id);
+
+		if (existingIdx === -1) {
+			this.state.addEffect(effect);
+		} else {
+			let old = this.state.effects[existingIdx];
+
+			if (old.label !== effect.label) {
+				old.label = effect.label;
+			}
+
+			if (old.code !== effect.shader) {
+				old.code = effect.shader;
+			}
+
+			if (old.active !== effect.active) {
+				old.active = effect.active;
+			}
+
+			if (old.disabled !== effect.disabled) {
+				old.disabled = effect.disabled;
+			}
+		}
+	}
+
+	removeEffect(effect) {
+		let existingIdx = this.state.effects.findIndex((e) => e.id === effect.id);
+		let existing = this.state.effects[existingIdx];
+
+		this.state.slots.map((slot, idx) => {
+			if (slot.target === existing) {
+				this.setSlot(idx, null);
+			}
+		});
+
+		this.state.effects = this.state.effects.toSpliced(existingIdx, 1);
 	}
 
 	async saveProject() {

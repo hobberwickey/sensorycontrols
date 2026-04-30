@@ -64,7 +64,7 @@
 
 <script>
   import { storage } from "../js/storage.js";
-  import { gen_slug } from "../js/utils.js";
+  import { gen_slug, validate_shader } from "../js/utils.js";
 
   import { Effects } from "../js/effects.js";
 
@@ -157,12 +157,13 @@
       let id = this.id || target;
       let path = parts.join("/");
 
-      console.log(`Slug: ${slug}, ID: ${id}, PATH: ${path}`);
-
-      return;
-
       let code = this.editor.getValue();
       let existing = await storage.getItem("effects", this.id);
+
+      this.error = validate_shader(code);
+      if (!!this.error) {
+        return;
+      }
 
       if (!!this.save) {
         if (!!existing) {
@@ -178,14 +179,14 @@
           confirmation.options = [
             {
               action: () => {
-                this.save(this.label, code, this.id);
+                this.save(this.label, code, id, path);
                 confirmation.parentNode.removeChild(confirmation);
               },
               label: "Save Existing",
             },
             {
               action: () => {
-                this.save(this.label, code, gen_id());
+                this.save(this.label, code, id + "_x", path);
                 confirmation.parentNode.removeChild(confirmation);
               },
               label: "Save New",
@@ -206,7 +207,7 @@
           return;
         }
 
-        this.save(this.label, code, this.id);
+        this.save(this.label, code, id, path);
       }
 
       this.dirty = false;

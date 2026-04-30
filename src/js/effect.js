@@ -5,9 +5,11 @@ export class Effect extends ContextBlocks {
 		super({
 			id: effect.id,
 			type: "effect",
+			disabled: defaults.disabled || false,
+			active: defaults.active || false,
 			label: defaults?.label || effect.label,
 			values: defaults?.values || new Array(6).fill(null).map((v) => [0, 0]),
-			code: defaults?.code || ``,
+			code: defaults?.shader || defaults.code || ``,
 		});
 	}
 }
