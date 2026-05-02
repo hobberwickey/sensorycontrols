@@ -252,15 +252,15 @@ export class State extends ContextBlocks {
 	// Adds broadcast events to an effect
 	addEffectEvents(effect, idx) {
 		effect.listen("label", (label) => {
-			this.post("update_effect", { label }, { idx });
+			this.post("update_effect", { label }, { idx, id: effect.id });
 		});
 
 		effect.listen("code", (code) => {
-			this.post("update_effect", { code }, { idx });
+			this.post("update_effect", { code }, { idx, id: effect.id });
 		});
 
 		effect.listen("values", (values) => {
-			this.post("update_effect", { values }, { idx });
+			this.post("update_effect", { values }, { idx, id: effect.id });
 		});
 	}
 
@@ -316,7 +316,7 @@ export class State extends ContextBlocks {
 		}
 
 		if (action === "update_effect") {
-			target = this.effects[data.idx];
+			target = this.effects.find((e) => e.id === data.id);
 		}
 
 		if (action === "update_video") {
