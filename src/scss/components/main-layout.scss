@@ -17,6 +17,7 @@ main-layout {
 
 		display: flex;
 		align-items: center;
+		overflow: hidden;
 
 		.left-nav {
 			flex: 1;

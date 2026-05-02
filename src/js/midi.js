@@ -2,6 +2,17 @@ import { ContextBlocks } from "building-blocks";
 
 import app from "../app.js";
 
+const notes = {
+	video: 10,
+	slot: 11,
+	statuses: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+	values: [
+		24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+		43, 44, 45, 46, 47,
+	],
+	opacity: [48, 49, 50, 51, 52, 53],
+};
+
 export class Knobs extends ContextBlocks {
 	constructor(input, output) {
 		super({
@@ -82,8 +93,7 @@ export class Sliders extends ContextBlocks {
 		let idx = this.notes.indexOf(note);
 
 		if (idx !== -1) {
-			console.log(idx, velocity / 127);
-			// app.setValues(idx, velocity / 127);
+			app.setValues(idx, velocity / 127);
 		}
 	}
 
@@ -101,14 +111,14 @@ export class MIDI extends ContextBlocks {
 			output: null,
 		});
 
+		this.locked = false;
+
 		this.knobs = null;
 		this.sliders = null;
 		this.rotaries = null;
 
 		const onMIDISuccess = (midiAccess) => {
 			for (const entry of midiAccess.inputs) {
-				console.log(entry[1].name);
-
 				this.inputs = [...this.inputs, entry[1]];
 
 				if (entry[1].name === "Sensory Controller") {
@@ -119,6 +129,8 @@ export class MIDI extends ContextBlocks {
 						let velocity = e.data[2];
 
 						console.log(note, velocity);
+
+						this.locked = true;
 
 						if (!!this.knobs) {
 							this.knobs.onMsg(note, velocity);
@@ -131,6 +143,8 @@ export class MIDI extends ContextBlocks {
 						if (!!this.rotaries) {
 							this.rotaries.onMsg(note, velocity);
 						}
+
+						this.locked = false;
 					};
 				}
 			}
@@ -147,42 +161,101 @@ export class MIDI extends ContextBlocks {
 			this.rotaries = new Rotaries(this.input, this.output);
 			this.sliders = new Sliders(this.input, this.output);
 
-			app.state.listen("selected", (selected) => {
-				// Stub
-			});
+			app.state.listen(
+				"selected",
+				(selected, previous) => {
+					if (selected.video !== previous.video) {
+						this.sendMsg(notes.video, selected.video);
+					}
+
+					if (selected.slot !== previous.slot) {
+						this.sendMsg(notes.slot, selected.slot);
+					}
+				},
+				"midi-handler-selected",
+			);
 
 			app.state.videos.map((video, idx) => {
-				video.listen("opacity", (opacity) => {
-					if (!!this.knobs) {
-						this.knobs.sendMsg(idx, opacity * 127);
-					}
-				});
+				video.listen(
+					"opacity",
+					(opacity) => {
+						this.sendMsg(notes.opacity[idx], (opacity * 127) | 0);
+					},
+					"midi-handler",
+				);
 			});
 
-			app.state.effects.map((effect, idx) => {
-				effect.listen("values", (values) => {
-					if (!!this.sliders) {
-						this.sliders.sendMsg(idx, 0, values[0]);
-						this.sliders.sendMsg(idx, 1, values[1]);
-					}
-				});
+			app.state.scripts.map((script, idx) => {
+				script.listen(
+					"values",
+					(values) => {
+						app.state.slots.map((slot, idx) => {
+							if (!this.locked && slot.target?.id === script.id) {
+								this.sendMsg(notes.values[idx * 2], (values[0] * 127) | 0);
+								this.sendMsg(notes.values[idx * 2 + 1], (values[1] * 127) | 0);
+							}
+						});
+					},
+					"midi-handler",
+				);
+
+				script.listen(
+					"disabled",
+					(disabled) => {
+						app.state.slots.map((slot, idx) => {
+							if (slot.target?.id === script.id) {
+								this.sendMsg(notes.statuses[idx], +disabled);
+							}
+						});
+					},
+					"midi-handler",
+				);
 			});
 
-			// this.leds = new LEDs(
-			//   this.state,
-			//   this.config,
-			//   this.midiOutput,
-			//   this.midiInput,
-			// );
+			app.state.listen(
+				"effects",
+				(effects) => {
+					effects.map((effect) => {
+						effect.listen(
+							"values",
+							(values) => {
+								let vidIdx = app.state.selected.video;
 
-			// this.sliders = new Sliders(
-			//   this.state,
-			//   this.config,
-			//   this.midiOutput,
-			//   this.midiInput,
-			// );
+								if (vidIdx === null) {
+									return;
+								}
 
-			// this.midiAccess = midiAccess; // store in the global (in real usage, would probably keep in an object instance)
+								app.state.slots.map((slot, idx) => {
+									if (!this.locked && slot.target?.id === effect.id) {
+										this.sendMsg(
+											notes.values[idx * 2],
+											(values[vidIdx][0] * 127) | 0,
+										);
+										this.sendMsg(
+											notes.values[idx * 2 + 1],
+											(values[vidIdx][1] * 127) | 0,
+										);
+									}
+								});
+							},
+							"midi-handler",
+						);
+
+						effect.listen(
+							"disabled",
+							(disabled) => {
+								app.state.slots.map((slot, idx) => {
+									if (slot.target?.id === effect.id) {
+										this.sendMsg(notes.statuses[idx], +disabled);
+									}
+								});
+							},
+							"midi-handler",
+						);
+					});
+				},
+				"midi-handler-effects",
+			);
 		};
 
 		const onMIDIFailure = (msg) => {
@@ -194,5 +267,9 @@ export class MIDI extends ContextBlocks {
 		} else {
 			console.log("No Midi Access");
 		}
+	}
+
+	sendMsg(note, value) {
+		this.output.send([0xb0, note, value]);
 	}
 }
