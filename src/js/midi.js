@@ -270,6 +270,8 @@ export class MIDI extends ContextBlocks {
 	}
 
 	sendMsg(note, value) {
-		this.output.send([0xb0, note, value]);
+		if (!!this.output) {
+			this.output.send([0xb0, note, value]);
+		}
 	}
 }

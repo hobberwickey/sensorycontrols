@@ -54,6 +54,10 @@ class App extends ContextBlocks {
 			shapes[i].opacity[idx] = value;
 			shapes[i].opacity = [...shapes[i].opacity];
 		}
+
+		if (this.state.selected.video !== idx) {
+			this.updateSelected("video", idx);
+		}
 	}
 
 	/**
