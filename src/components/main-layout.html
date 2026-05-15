@@ -1,33 +1,35 @@
 <template>
   <header>
-    <div class="left-nav">
-      <h2 class="fancy">Sensory Controls</h2>
-    </div>
-    <div class="right-nav">
-      <app-icon
-        @click="save()"
-        :class='saved ? "saved" : ""'
-        :icon="'check-circle'"
-        id="save_btn"
-        aria-label="Save Project"
-        uk-tooltip="Save Project"
-        clickable
-      ></app-icon>
+    <nav>
+      <div class="left-nav">
+        <h2 class="fancy">Sensory Controls</h2>
+      </div>
+      <div class="right-nav">
+        <app-icon
+          @click="save()"
+          :class='saved ? "saved" : ""'
+          :icon="'check-circle'"
+          id="save_btn"
+          aria-label="Save Project"
+          uk-tooltip="Save Project"
+          clickable
+        ></app-icon>
 
-      <input
-        id="project_name"
-        type="text"
-        :value="name"
-        @input="updateName($event)"
-      />
-      <app-icon
-        id="open_menu"
-        :icon="'menu-hamburger'"
-        @click="openMenu($event)"
-        aria-label="Open Menu"
-      ></app-icon>
-      <main-menu></main-menu>
-    </div>
+        <input
+          id="project_name"
+          type="text"
+          :value="name"
+          @input="updateName($event)"
+        />
+        <app-icon
+          id="open_menu"
+          :icon="'menu-hamburger'"
+          @click="openMenu($event)"
+          aria-label="Open Menu"
+        ></app-icon>
+      </div>
+    </nav>
+    <main-menu></main-menu>
   </header>
   <div class="sidebar">
     <side-menu></side-menu>

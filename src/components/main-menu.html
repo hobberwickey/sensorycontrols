@@ -51,6 +51,17 @@
           <div>No Midi Controllers Found</div>
         </div>
       </template>
+      <template :for="devices" key="$value.id">
+        <div class="obj device">
+          <template :if="$value.name === controller?.name">
+            <app-icon :icon="'check-circle'" aria-label="Selected"></app-icon>
+          </template>
+          <template :if="$value.name !== controller?.name">
+            <app-icon :icon="'circle'" aria-label="Selected"></app-icon>
+          </template>
+          <span>{{$value.name}}</span>
+        </div>
+      </template>
     </div>
 
     <section>
@@ -82,7 +93,7 @@
     }
 
     static get observedProperties() {
-      return ["projects", "devices"];
+      return ["projects", "devices", "controller"];
     }
 
     connected() {
@@ -90,6 +101,14 @@
 
       storage.bind(this, "projects", (projects) => {
         this.projects = projects;
+      });
+
+      app.midi.listen("inputs", (inputs) => {
+        this.devices = inputs;
+      });
+
+      app.midi.listen("input", (input) => {
+        this.controller = input;
       });
     }
 
@@ -106,7 +125,7 @@
     }
 
     refreshMidi() {
-      console.log("Refresh Midi");
+      app.midi.refresh();
     }
 
     loadProject(project) {
