@@ -66,6 +66,7 @@ export class Shape extends ContextBlocks {
 		super({
 			id: defaults?.id || gen_id(),
 			type: defaults?.type || "quad",
+			path: (defaults?.type || "quad") + "s",
 			label: defaults?.label || "",
 			opacity: defaults?.opacity || new Array(6).fill(0),
 			tris: tris,

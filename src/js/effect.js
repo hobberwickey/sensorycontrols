@@ -4,6 +4,7 @@ export class Effect extends ContextBlocks {
 	constructor(effect, defaults) {
 		super({
 			id: effect.id,
+			path: defaults.path || "",
 			type: "effect",
 			disabled: defaults.disabled || false,
 			active: defaults.active || false,
