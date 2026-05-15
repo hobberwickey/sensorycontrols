@@ -118,144 +118,7 @@ export class MIDI extends ContextBlocks {
 		this.rotaries = null;
 
 		const onMIDISuccess = (midiAccess) => {
-			for (const entry of midiAccess.inputs) {
-				this.inputs = [...this.inputs, entry[1]];
-
-				if (entry[1].name === "Sensory Controller") {
-					this.input = entry[1];
-
-					entry[1].onmidimessage = (e) => {
-						let note = e.data[1];
-						let velocity = e.data[2];
-
-						console.log(note, velocity);
-
-						this.locked = true;
-
-						if (!!this.knobs) {
-							this.knobs.onMsg(note, velocity);
-						}
-
-						if (!!this.sliders) {
-							this.sliders.onMsg(note, velocity);
-						}
-
-						if (!!this.rotaries) {
-							this.rotaries.onMsg(note, velocity);
-						}
-
-						this.locked = false;
-					};
-				}
-			}
-
-			for (const entry of midiAccess.outputs) {
-				this.outputs = [...this.outputs, entry[1]];
-
-				if (entry[1].name === "Sensory Controller") {
-					this.output = entry[1];
-				}
-			}
-
-			this.knobs = new Knobs(this.input, this.output);
-			this.rotaries = new Rotaries(this.input, this.output);
-			this.sliders = new Sliders(this.input, this.output);
-
-			app.state.listen(
-				"selected",
-				(selected, previous) => {
-					if (selected.video !== previous.video) {
-						this.sendMsg(notes.video, selected.video);
-					}
-
-					if (selected.slot !== previous.slot) {
-						this.sendMsg(notes.slot, selected.slot);
-					}
-				},
-				"midi-handler-selected",
-			);
-
-			app.state.videos.map((video, idx) => {
-				video.listen(
-					"opacity",
-					(opacity) => {
-						this.sendMsg(notes.opacity[idx], (opacity * 127) | 0);
-					},
-					"midi-handler",
-				);
-			});
-
-			app.state.scripts.map((script, idx) => {
-				script.listen(
-					"values",
-					(values) => {
-						app.state.slots.map((slot, idx) => {
-							if (!this.locked && slot.target?.id === script.id) {
-								this.sendMsg(notes.values[idx * 2], (values[0] * 127) | 0);
-								this.sendMsg(notes.values[idx * 2 + 1], (values[1] * 127) | 0);
-							}
-						});
-					},
-					"midi-handler",
-				);
-
-				script.listen(
-					"disabled",
-					(disabled) => {
-						app.state.slots.map((slot, idx) => {
-							if (slot.target?.id === script.id) {
-								this.sendMsg(notes.statuses[idx], +disabled);
-							}
-						});
-					},
-					"midi-handler",
-				);
-			});
-
-			app.state.listen(
-				"effects",
-				(effects) => {
-					effects.map((effect) => {
-						effect.listen(
-							"values",
-							(values) => {
-								let vidIdx = app.state.selected.video;
-
-								if (vidIdx === null) {
-									return;
-								}
-
-								app.state.slots.map((slot, idx) => {
-									if (!this.locked && slot.target?.id === effect.id) {
-										this.sendMsg(
-											notes.values[idx * 2],
-											(values[vidIdx][0] * 127) | 0,
-										);
-										this.sendMsg(
-											notes.values[idx * 2 + 1],
-											(values[vidIdx][1] * 127) | 0,
-										);
-									}
-								});
-							},
-							"midi-handler",
-						);
-
-						effect.listen(
-							"disabled",
-							(disabled) => {
-								app.state.slots.map((slot, idx) => {
-									if (slot.target?.id === effect.id) {
-										this.sendMsg(notes.statuses[idx], +disabled);
-									}
-								});
-							},
-							"midi-handler",
-						);
-					});
-				},
-				"midi-handler-effects",
-			);
+			this.setup(midiAccess);
 		};
 
 		const onMIDIFailure = (msg) => {
@@ -267,6 +130,167 @@ export class MIDI extends ContextBlocks {
 		} else {
 			console.log("No Midi Access");
 		}
+	}
+
+	refresh() {
+		const onMIDISuccess = (midiAccess) => {
+			this.setup(midiAccess);
+		};
+
+		const onMIDIFailure = (msg) => {
+			console.error(`Failed to get MIDI access - ${msg}`);
+		};
+
+		if (!!navigator.requestMIDIAccess) {
+			navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+		} else {
+			console.log("No Midi Access");
+		}
+	}
+
+	setup(midiAccess) {
+		let inputs = [];
+		let outputs = [];
+
+		for (const entry of midiAccess.inputs) {
+			inputs.push(entry[1]);
+
+			if (entry[1].name === "Sensory Controller") {
+				this.input = entry[1];
+
+				entry[1].onmidimessage = (e) => {
+					let note = e.data[1];
+					let velocity = e.data[2];
+
+					this.locked = true;
+
+					if (!!this.knobs) {
+						this.knobs.onMsg(note, velocity);
+					}
+
+					if (!!this.sliders) {
+						this.sliders.onMsg(note, velocity);
+					}
+
+					if (!!this.rotaries) {
+						this.rotaries.onMsg(note, velocity);
+					}
+
+					this.locked = false;
+				};
+			}
+		}
+
+		for (const entry of midiAccess.outputs) {
+			outputs.push(entry[1]);
+
+			if (entry[1].name === "Sensory Controller") {
+				this.output = entry[1];
+			}
+		}
+
+		this.inputs = inputs;
+		this.outputs = outputs;
+
+		this.knobs = new Knobs(this.input, this.output);
+		this.rotaries = new Rotaries(this.input, this.output);
+		this.sliders = new Sliders(this.input, this.output);
+
+		app.state.listen(
+			"selected",
+			(selected, previous) => {
+				if (selected.video !== previous.video) {
+					this.sendMsg(notes.video, selected.video);
+				}
+
+				if (selected.slot !== previous.slot) {
+					this.sendMsg(notes.slot, selected.slot);
+				}
+			},
+			"midi-handler-selected",
+		);
+
+		app.state.videos.map((video, idx) => {
+			video.listen(
+				"opacity",
+				(opacity) => {
+					this.sendMsg(notes.opacity[idx], (opacity * 127) | 0);
+				},
+				"midi-handler",
+			);
+		});
+
+		app.state.scripts.map((script, idx) => {
+			script.listen(
+				"values",
+				(values) => {
+					app.state.slots.map((slot, idx) => {
+						if (!this.locked && slot.target?.id === script.id) {
+							this.sendMsg(notes.values[idx * 2], (values[0] * 127) | 0);
+							this.sendMsg(notes.values[idx * 2 + 1], (values[1] * 127) | 0);
+						}
+					});
+				},
+				"midi-handler",
+			);
+
+			script.listen(
+				"disabled",
+				(disabled) => {
+					app.state.slots.map((slot, idx) => {
+						if (slot.target?.id === script.id) {
+							this.sendMsg(notes.statuses[idx], +disabled);
+						}
+					});
+				},
+				"midi-handler",
+			);
+		});
+
+		app.state.listen(
+			"effects",
+			(effects) => {
+				effects.map((effect) => {
+					effect.listen(
+						"values",
+						(values) => {
+							let vidIdx = app.state.selected.video;
+
+							if (vidIdx === null) {
+								return;
+							}
+
+							app.state.slots.map((slot, idx) => {
+								if (!this.locked && slot.target?.id === effect.id) {
+									this.sendMsg(
+										notes.values[idx * 2],
+										(values[vidIdx][0] * 127) | 0,
+									);
+									this.sendMsg(
+										notes.values[idx * 2 + 1],
+										(values[vidIdx][1] * 127) | 0,
+									);
+								}
+							});
+						},
+						"midi-handler",
+					);
+
+					effect.listen(
+						"disabled",
+						(disabled) => {
+							app.state.slots.map((slot, idx) => {
+								if (slot.target?.id === effect.id) {
+									this.sendMsg(notes.statuses[idx], +disabled);
+								}
+							});
+						},
+						"midi-handler",
+					);
+				});
+			},
+			"midi-handler-effects",
+		);
 	}
 
 	sendMsg(note, value) {
