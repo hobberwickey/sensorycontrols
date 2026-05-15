@@ -6,15 +6,25 @@
           <label @click="toggle($event)"
             ><span uk-icon="folder"></span> <span>{{$value.key}}</span></label
           >
-          <folder-list :items="$value.value" :actions="actions"></folder-list>
+          <folder-list
+            :items="$value.value"
+            :actions="actions"
+            :dragtype="dragtype"
+          ></folder-list>
         </div>
       </template>
       <template :for="files || []" :id="obj.value.id" $idx="index" $value="obj">
         <div class="object">
-          <label
-            ><span uk-icon="hashtag"></span>
-            <span>{{obj.value.label}}</span></label
-          >
+          <label :draggable="!!dragtype" @dragStart="handleAssign(obj, $event)">
+            <template :if="!!dragtype">
+              <app-icon
+                :icon="'move'"
+                aria-label="Assign to Slot"
+                uk-tooltip="Assign to Slot"
+              ></app-icon>
+            </template>
+            <span>{{obj.value.label}}</span>
+          </label>
           <template :for="actions" :id="$idx">
             <folder-list-action
               :options="$value"
@@ -36,7 +46,7 @@
     }
 
     static get observedProperties() {
-      return ["items", "folders", "files", "actions"];
+      return ["items", "folders", "files", "actions", "dragtype"];
     }
 
     connected() {
@@ -50,6 +60,20 @@
     toggle(e) {
       e.stopPropagation();
       e.target.parentNode.classList.toggle("expanded");
+    }
+
+    handleAssign(obj, e) {
+      document.body.classList.add(`drag-${this.dragtype}`);
+
+      e.dataTransfer.clearData();
+      e.dataTransfer.setData(
+        "text/plain",
+        JSON.stringify({ id: obj.value.id, type: this.dragtype }),
+      );
+
+      window.addEventListener("dragend", (e) => {
+        document.body.classList.remove(`drag-${this.dragtype}`);
+      });
     }
 
     sort() {

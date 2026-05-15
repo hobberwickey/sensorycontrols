@@ -63,6 +63,34 @@
           });
         });
       });
+
+      this.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
+
+      this.addEventListener("dragenter", (e) => {
+        if (e.currentTarget.contains(e.relatedTarget)) {
+          return;
+        }
+
+        this.classList.add("dragover");
+      });
+
+      this.addEventListener("dragleave", (e) => {
+        if (e.currentTarget.contains(e.relatedTarget)) {
+          return;
+        }
+
+        this.classList.remove("dragover");
+      });
+
+      this.addEventListener("drop", (e) => {
+        e.preventDefault();
+
+        let data = JSON.parse(e.dataTransfer.getData("text/plain"));
+        app.setSlot(this.idx, data.id);
+        app.updateSelected("slot", this.idx);
+      });
     }
 
     isScript(target) {

@@ -55,7 +55,12 @@
         <div class="uk-width-1-1 uk-flex actions">
           <div class="btn" @click="openNewScript()">Add Script</div>
         </div>
-        <div class="obj-list">
+        <folder-list
+          :items="sorted(scripts)"
+          :actions="actions?.scripts || []"
+          :dragtype="'script'"
+        ></folder-list>
+        <!-- <div class="obj-list">
           <template :for="scripts" :id="$value.id">
             <div class="obj">
               <div>{{$value.label}}</div>
@@ -75,7 +80,7 @@
               ></a>
             </div>
           </template>
-        </div>
+        </div> -->
       </li>
     </template>
     <template :if="tab === 'effects'">
@@ -86,6 +91,7 @@
         <folder-list
           :items="sorted(effects)"
           :actions="actions?.effects || []"
+          :dragtype="'effect'"
         ></folder-list>
       </li>
     </template>
@@ -120,22 +126,15 @@
         this.shapes = shapes;
       });
       storage.bind(this, "effects", (effects) => {
+        effects.map((e) => {
+          e.removable = true;
+        });
+
         this.effects = [...Effects, ...(effects || [])];
       });
 
       this.actions = {
         effects: [
-          {
-            icon: "check",
-            class: "included",
-            label: "Show in Slots",
-            active: ($idx, $key, $value) => {
-              return !!$value.active;
-            },
-            click: ($idx, $key, $value) => {
-              this.toggleEffect($value);
-            },
-          },
           {
             icon: "pencil",
             label: "Edit Effect",
@@ -156,6 +155,23 @@
             },
             click: ($idx, $key, $value) => {
               this.deleteEffect($value);
+            },
+          },
+        ],
+        scripts: [
+          {
+            icon: "pencil",
+            label: "Edit Script",
+            click: ($idx, $key, $value) => {
+              this.openEditScript($value);
+            },
+          },
+          {
+            icon: "trash",
+            class: "delete",
+            label: "Delete Script",
+            click: ($idx, $key, $value) => {
+              this.deleteScript($value);
             },
           },
         ],
@@ -196,7 +212,7 @@
       document.body.appendChild(editor);
     }
 
-    editScript(label, code, id) {
+    editScript(label, code, id, path) {
       storage.upsertItem("scripts", { id, label, code });
     }
 
@@ -240,10 +256,10 @@
       app.updateEffect(obj);
     }
 
-    async toggleEffect(effect) {
-      effect.active = !effect.active;
-      let obj = await storage.upsertItem("effects", effect);
-      app.updateEffect(effect);
+    async assignEffect(effect, idx) {
+      // effect.active = !effect.active;
+      // let obj = await storage.upsertItem("effects", effect);
+      // app.updateEffect(effect);
     }
 
     deleteEffect(effect) {
@@ -254,7 +270,7 @@
     sorted(items) {
       let struct = [];
       (items || []).map((item) => {
-        let folders = item.path.split("/");
+        let folders = (item.path || "").split("/");
         let folder = struct;
 
         folders.map((f) => {
