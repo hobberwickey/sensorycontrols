@@ -1,0 +1,7 @@
+<svg viewBox="0 0 21 21" fill="currentColor" width="32" height="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(2 3)" fill-rule="evenodd">
+        <line x1="10.5" x2="6.5" y1="0.5" y2="14.5" />
+        <polyline transform="rotate(135 4.5 5.5)" points="7.328 2.672 7.328 8.328 1.672 8.328" />
+        <polyline transform="matrix(0.707107, 0.707107, 0.707107, -0.707107, -3.056341, 7.378659)" points="15.328 6.672 15.328 12.328 9.672 12.328" />
+    </g>
+</svg>

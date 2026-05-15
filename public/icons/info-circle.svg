@@ -1,0 +1,10 @@
+<svg viewBox="0 0 21 21" fill="currentColor" width="32" height="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g fill="none" transform="translate(2 2)" fill-rule="evenodd">
+        <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8.5" cy="8.5" r="8" />
+            <path d="M8.5 12.5v-4h-1" />
+            <path d="M7.5 12.5h2" />
+        </g>
+        <circle fill="currentColor" cx="8.5" cy="5.5" r="1" />
+    </g>
+</svg>

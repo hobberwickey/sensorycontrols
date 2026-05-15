@@ -1,0 +1,6 @@
+<svg viewBox="0 0 21 21" fill="currentColor" width="32" height="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(3 4)" fill-rule="evenodd">
+        <path d="M3.5 10.5l-1-0.0346c-1.1019-37e-4-2-0.9326-2-2.0345V2.4654c0-1.1045 0.8954-2 2-2l10-24e-4c1.1046 0 2 0.8954 2 2v6.0024c0 1.1046-0.8954 2-2 2-15e-4 0-0.3348 0.0124-1 0.0371" />
+        <path transform="matrix(1, 0, 0, -1, 0, 22)" d="M7.5 12.5l-3-3h6z" />
+    </g>
+</svg>

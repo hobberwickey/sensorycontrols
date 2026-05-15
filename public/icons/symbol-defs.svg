@@ -1,5 +1,32 @@
 <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
+        <symbol id="move" viewBox="0 0 21 21" fill="currentColor" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(1 1)" fill-rule="evenodd">
+                <path d="M18.5 9.5h-18" />
+                <path d="M9.5 0.5v18" />
+                <path d="M15.5 12.5l3-3-3-3" />
+                <path d="M3.5 12.5l-3-3 3-3" />
+                <path d="M6.5 3.5l3-3 3 3" />
+                <path d="M6.5 15.5l3 3 3-3" />
+            </g>
+        </symbol>
+        <symbol id="plus-circle" viewBox="0 0 21 21" fill="currentColor" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(2 3)" fill-rule="evenodd">
+                <path d="M8 16c4.438 0 8-3.5263 8-7.9643S12.438 0 8 0 0 3.5977 0 8.0357 3.562 16 8 16z" />
+                <path d="M4 8h8" />
+                <path d="M8 12.0563V4z" />
+            </g>
+        </symbol>
+        <symbol id="info-circle" viewBox="0 0 21 21" fill="currentColor" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g fill="none" transform="translate(2 2)" fill-rule="evenodd">
+                <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8.5" cy="8.5" r="8" />
+                    <path d="M8.5 12.5v-4h-1" />
+                    <path d="M7.5 12.5h2" />
+                </g>
+                <circle fill="currentColor" cx="8.5" cy="5.5" r="1" />
+            </g>
+        </symbol>
         <symbol id="code" viewBox="0 0 21 21" fill="currentColor" xmlns:xlink="http://www.w3.org/1999/xlink">
             <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(2 3)" fill-rule="evenodd">
                 <line x1="10.5" x2="6.5" y1="0.5" y2="14.5" />
