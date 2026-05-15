@@ -151,7 +151,7 @@
         return console.warn("Label Required");
       }
 
-      let slug = gen_slug(this.label);
+      let slug = this.label;
       let parts = slug.split("/");
       let target = parts.pop();
       let id = this.id || target;
