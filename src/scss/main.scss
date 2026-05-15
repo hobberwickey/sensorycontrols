@@ -15,24 +15,27 @@
 
   --text-color: #fff;
   --fg-color: hsl(180deg 20.54% 90.41%);
-  --hover-color: #d8f5ff;
+  --hover-color: hsla(184.14, 100%, 51.57%, 0.1);
+  --drop-color: hsla(184.14, 100%, 51.57%, 0.4);
 
-  --fx-clr-0: hsl(204, 70%, 41%);
-  --fx-clr-1: hsl(116, 56%, 40%);
-  --fx-clr-2: hsl(359, 79%, 49%);
-  --fx-clr-3: hsl(30, 100%, 50%);
-  --fx-clr-4: hsl(269, 43%, 42%);
-  --fx-clr-5: hsl(21, 63%, 42%);
+  --med-grey: #e3e3e3;
 
-  --grp-clr-0: hsl(201, 52%, 77%);
-  --grp-clr-1: hsl(92, 57%, 70%);
-  --grp-clr-2: hsl(1, 92%, 79%);
-  --grp-clr-3: hsl(34, 97%, 71%);
-  --grp-clr-4: hsl(280, 30%, 76%);
-  --grp-clr-5: hsl(60, 100%, 80%);
+  // --fx-clr-0: hsl(204, 70%, 41%);
+  // --fx-clr-1: hsl(116, 56%, 40%);
+  // --fx-clr-2: hsl(359, 79%, 49%);
+  // --fx-clr-3: hsl(30, 100%, 50%);
+  // --fx-clr-4: hsl(269, 43%, 42%);
+  // --fx-clr-5: hsl(21, 63%, 42%);
 
-  --selected-fx-clr: var(--fx-clr-0);
-  --selected-grp-clr: var(--grp-clr-0);
+  // --grp-clr-0: hsl(201, 52%, 77%);
+  // --grp-clr-1: hsl(92, 57%, 70%);
+  // --grp-clr-2: hsl(1, 92%, 79%);
+  // --grp-clr-3: hsl(34, 97%, 71%);
+  // --grp-clr-4: hsl(280, 30%, 76%);
+  // --grp-clr-5: hsl(60, 100%, 80%);
+
+  // --selected-fx-clr: var(--fx-clr-0);
+  // --selected-grp-clr: var(--grp-clr-0);
 
   --default-font-size: 16px;
 }

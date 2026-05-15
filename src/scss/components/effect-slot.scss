@@ -78,7 +78,7 @@ effect-slot {
       box-sizing: border-box;
       margin-bottom: 0;
       transition: opacity 200ms ease;
-      z-index: 2;
+      z-index: -1;
       opacity: 0;
       pointer-events: none;
 
@@ -87,6 +87,8 @@ effect-slot {
         border-radius: 5px;
         box-shadow: -1px 7px 15px 0px #716f6f;
         background-color: #d4d4d4;
+        max-height: 500px;
+        overflow: auto;
 
         li {
           margin: 0px;
@@ -130,6 +132,7 @@ effect-slot {
       .select-list {
         opacity: 1;
         pointer-events: all;
+        z-index: 2;
       }
     }
   }
@@ -143,6 +146,25 @@ effect-slot {
 
     &.disabled {
       box-shadow: 0px 1px 14px 6px hsl(277.14deg 100% 51.57%) !important;
+    }
+  }
+}
+
+.drag-effect,
+.drag-script {
+  effect-slot {
+    .select-display {
+      background-color: var(--hover-color);
+    }
+
+    &.dragover {
+      .select-display {
+        background-color: var(--drop-color);
+      }
+
+      * {
+        pointer-events: none;
+      }
     }
   }
 }

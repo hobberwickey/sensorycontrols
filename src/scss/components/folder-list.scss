@@ -82,6 +82,10 @@ folder-list {
 		padding: 3px 10px;
 		border-bottom: solid 1px #ccc;
 
+		&:hover {
+			background-color: var(--hover-color);
+		}
+
 		label {
 			flex: 1;
 
