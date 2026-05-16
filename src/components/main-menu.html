@@ -94,8 +94,16 @@
     </section>
     <div class="beats">
       <div class="setter">
-        <div>
+        <div class="bpm">
           <label>BPM {{bpm}}</label>
+          <div
+            class="tap"
+            @click="tap()"
+            @mousedown="addTapped($event)"
+            @mouseup="removeTapped($event)"
+          >
+            Tap
+          </div>
         </div>
         <input
           type="range"
@@ -214,6 +222,20 @@
 
     loadProject(project) {
       app.loadProject(project);
+    }
+
+    tap() {
+      app.midi.tap();
+    }
+
+    addTapped(e) {
+      e.preventDefault();
+      e.target.classList.add("tapped");
+    }
+
+    removeTapped(e) {
+      e.preventDefault();
+      e.target.classList.remove("tapped");
     }
 
     deleteProject(project, evt) {

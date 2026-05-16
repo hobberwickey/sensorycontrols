@@ -65,6 +65,27 @@ main-menu {
 	.beats {
 		padding: 10px;
 
+		.bpm {
+			display: flex;
+
+			label {
+				flex: 1;
+			}
+
+			.tap {
+				cursor: pointer;
+				border: solid 1px;
+				border-radius: 3px;
+				font-size: 12px;
+				padding: 0px 10px;
+
+				&.tapped {
+					background-color: green;
+					color: white;
+				}
+			}
+		}
+
 		.triggers {
 			margin-top: 10px;
 			display: flex;

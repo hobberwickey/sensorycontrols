@@ -124,6 +124,10 @@ class MIDI extends ContextBlocks {
 		this.pulseCount = null;
 		this.bpmCount = 0;
 		this.lastBPMs = new Array(4).fill(0);
+
+		this.lastTaps = null;
+		this.tapTimeout = null;
+
 		this.nextBeat = null;
 		this.next16th = null;
 
@@ -207,6 +211,35 @@ class MIDI extends ContextBlocks {
 
 	setBPM(bpm) {
 		this.bpm = bpm;
+	}
+
+	tap() {
+		if (this.clock !== null) {
+			return;
+		}
+
+		if (this.lastTaps !== null) {
+			this.lastTaps.push(performance.now());
+		} else {
+			this.lastTaps = [performance.now()];
+		}
+
+		let total = this.lastTaps[this.lastTaps.length - 1] - this.lastTaps[0];
+		let taps = this.lastTaps.length - 1;
+		let avg = total / taps;
+		let seconds = avg / 1000;
+		let bpm = 60 / seconds;
+
+		if (taps > 2) {
+			this.bpm = Math.round(bpm);
+			this.nextBeat = 0;
+			this.next16th = 0;
+		}
+
+		clearTimeout(this.tapTimeout);
+		this.tapTimeout = setTimeout(() => {
+			this.lastTaps = null;
+		}, 2000);
 	}
 
 	refresh() {
