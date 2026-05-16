@@ -39,7 +39,7 @@ main-menu {
 	.obj-list {
 		& > div {
 			display: flex;
-			padding: 10px 10px 10px 20px;
+			padding: 10px 10px 10px 10px;
 			border-bottom: solid 1px #666;
 			background-color: white;
 			align-items: center;
@@ -52,6 +52,42 @@ main-menu {
 			app-icon {
 				margin: 0px 5px;
 				cursor: pointer;
+			}
+
+			&.device {
+				app-icon {
+					margin-left: 0px;
+				}
+			}
+		}
+	}
+
+	.beats {
+		padding: 10px;
+
+		.triggers {
+			margin-top: 10px;
+			display: flex;
+			transform: scale3d(1, -1, 1);
+
+			& > div {
+				flex: 1;
+
+				&.on-beat {
+					div {
+						background-color: green;
+					}
+				}
+
+				div {
+					padding-top: 100%;
+					border: solid 1px;
+				}
+
+				&:nth-child(4n + 1) {
+					flex: 1.4;
+					margin-top: 0px;
+				}
 			}
 		}
 	}

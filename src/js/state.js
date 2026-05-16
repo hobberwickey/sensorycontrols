@@ -39,6 +39,10 @@ export class State extends ContextBlocks {
 			effects: [],
 			videos: new Array(6).fill().map((_, idx) => new Video(idx)),
 			shapes: [new Shape({ label: "Quad 1", type: "quad" })],
+
+			/** Metronome **/
+			beat: [0, 0],
+			bpm: 120,
 		});
 
 		// There should only ever be one primary instance of the state
@@ -136,6 +140,14 @@ export class State extends ContextBlocks {
 
 		this.listen("effects", (effects) => {
 			this.post("update_effects", { effects });
+		});
+
+		this.listen("bpm", (bpm) => {
+			this.post("update_metonome", { bpm });
+		});
+
+		this.listen("beat", (beat) => {
+			this.post("update_metonome", { beat });
 		});
 
 		// Add events to the script objects
@@ -332,6 +344,10 @@ export class State extends ContextBlocks {
 		}
 
 		if (action === "update_media") {
+			target = this;
+		}
+
+		if (action === "update_metonome") {
 			target = this;
 		}
 

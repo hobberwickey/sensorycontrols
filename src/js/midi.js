@@ -102,13 +102,16 @@ export class Sliders extends ContextBlocks {
 	}
 }
 
-export class MIDI extends ContextBlocks {
+class MIDI extends ContextBlocks {
 	constructor() {
 		super({
 			inputs: [],
 			outputs: [],
 			input: null,
 			output: null,
+			clock: null,
+			bpm: 120,
+			beat: [1, 1],
 		});
 
 		this.locked = false;
@@ -116,6 +119,13 @@ export class MIDI extends ContextBlocks {
 		this.knobs = null;
 		this.sliders = null;
 		this.rotaries = null;
+
+		this.lastPulse = null;
+		this.pulseCount = null;
+		this.bpmCount = 0;
+		this.lastBPMs = new Array(4).fill(0);
+		this.nextBeat = null;
+		this.next16th = null;
 
 		const onMIDISuccess = (midiAccess) => {
 			this.setup(midiAccess);
@@ -130,6 +140,73 @@ export class MIDI extends ContextBlocks {
 		} else {
 			console.log("No Midi Access");
 		}
+
+		this.setClock(null);
+	}
+
+	setClock(clock) {
+		if (this.clock !== null) {
+			this.clock.onmidimessage = null;
+		}
+
+		this.clock = clock;
+
+		let defaultClock = () => {
+			if (this.clock === null) {
+				let next16th = this.next16th ?? (this.beat[1] + 1) % 4;
+				let nextBeat =
+					this.nextBeat ??
+					(next16th === 0 ? (this.beat[0] + 1) % 4 : this.beat[0]);
+
+				this.beat = [nextBeat, next16th];
+				this.nextBeat = null;
+				this.next16th = null;
+
+				setTimeout(defaultClock, ((60 / this.bpm) * 1000) / 4);
+			}
+		};
+
+		if (this.clock === null) {
+			defaultClock();
+		} else {
+			this.beatStart = performance.now();
+			this.clock.onmidimessage = (e) => {
+				if (e.data[0] === 248) {
+					this.pulseCount = (this.pulseCount + 1) % 6;
+
+					if (this.pulseCount === 0) {
+						let next16th = this.next16th ?? (this.beat[1] + 1) % 4;
+						let nextBeat =
+							this.nextBeat ??
+							(next16th === 0 ? (this.beat[0] + 1) % 4 : this.beat[0]);
+
+						this.beat = [nextBeat, next16th];
+						this.nextBeat = null;
+						this.next16th = null;
+
+						let diff = performance.now() - this.beatStart;
+						let bpm = 60 / (diff / 250);
+
+						this.lastBPMs[this.bpmCount] = bpm;
+						this.bpmCount = (this.bpmCount + 1) % 4;
+
+						let avgBPM =
+							(this.lastBPMs[0] +
+								this.lastBPMs[1] +
+								this.lastBPMs[2] +
+								this.lastBPMs[3]) /
+							4;
+
+						this.bpm = ((avgBPM * 10) | 0) / 10;
+						this.beatStart = performance.now();
+					}
+				}
+			};
+		}
+	}
+
+	setBPM(bpm) {
+		this.bpm = bpm;
 	}
 
 	refresh() {
@@ -299,3 +376,5 @@ export class MIDI extends ContextBlocks {
 		}
 	}
 }
+
+export const midi = new MIDI();

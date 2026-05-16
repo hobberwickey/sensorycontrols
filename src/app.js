@@ -1,11 +1,11 @@
 import { ContextBlocks } from "building-blocks";
 import { State } from "./js/state.js";
-import { MIDI } from "./js/midi.js";
 import { Effects } from "./js/effects.js";
 import { Effect } from "./js/effect.js";
 import { Script } from "./js/script.js";
 
 import { storage } from "./js/storage.js";
+import { midi } from "./js/midi.js";
 import { gen_id } from "./js/utils.js";
 
 class App extends ContextBlocks {
@@ -15,11 +15,18 @@ class App extends ContextBlocks {
 			name: "New Project",
 			saved: false,
 			state: new State(true),
-			midi: new MIDI(),
+			midi: midi,
 		});
 
 		this.screen = null;
-		// this.init();
+
+		this.midi.listen("bpm", (bpm) => {
+			this.state.bpm = bpm;
+		});
+
+		this.midi.listen("beat", (beat) => {
+			this.state.beat = beat;
+		});
 	}
 
 	updateSelected(type, idx) {

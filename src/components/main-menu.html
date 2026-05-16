@@ -51,15 +51,13 @@
           <div>No Midi Controllers Found</div>
         </div>
       </template>
-      <template :for="devices" key="$value.id">
+      <template :for="devices" :id="$value.id">
         <div class="obj device">
-          <template :if="$value.name === controller?.name">
-            <app-icon :icon="'check-circle'" aria-label="Selected"></app-icon>
-          </template>
-          <template :if="$value.name !== controller?.name">
-            <app-icon :icon="'circle'" aria-label="Selected"></app-icon>
-          </template>
-          <span>{{$value.name}}</span>
+          <app-icon
+            :icon="$value.name === controller?.name ? 'check-circle' : 'circle'"
+            aria-label="Selected"
+          ></app-icon>
+          <div>{{$value.name}}</div>
         </div>
       </template>
     </div>
@@ -79,6 +77,43 @@
           <div>No Midi Controllers Found</div>
         </div>
       </template>
+      <template :for="devices" :id="$value.id">
+        <div class="obj device">
+          <app-icon
+            :icon="$value.name === clock?.name ? 'check-circle' : 'circle'"
+            aria-label="Selected"
+            @click="setClock($value)"
+          ></app-icon>
+          <div>{{$value.name}}</div>
+        </div>
+      </template>
+    </div>
+
+    <section>
+      <label>Metronome</label>
+    </section>
+    <div class="beats">
+      <div class="setter">
+        <div>
+          <label>BPM {{bpm}}</label>
+        </div>
+        <input
+          type="range"
+          step="1"
+          min="40"
+          max="220"
+          :value="bpm"
+          :disabled="!!clock"
+          @input="setBPM($event.target.value)"
+        />
+      </div>
+      <div class="triggers">
+        <template :for="bar" :id="$idx">
+          <div :class="beatClass($idx, beat)" @click="setBeat($idx)">
+            <div></div>
+          </div>
+        </template>
+      </div>
     </div>
   </div>
 </template>
@@ -93,22 +128,43 @@
     }
 
     static get observedProperties() {
-      return ["projects", "devices", "controller"];
+      return [
+        "projects",
+        "devices",
+        "controller",
+        "clock",
+        "bpm",
+        "beat",
+        "bar",
+      ];
     }
 
     connected() {
       this.devices = [];
+      this.bar = new Array(16).fill(null);
 
       storage.bind(this, "projects", (projects) => {
         this.projects = projects;
       });
 
-      app.midi.listen("inputs", (inputs) => {
+      app.midi.bind(this, "inputs", (inputs) => {
         this.devices = inputs;
       });
 
-      app.midi.listen("input", (input) => {
+      app.midi.bind(this, "input", (input) => {
         this.controller = input;
+      });
+
+      app.midi.bind(this, "clock", (clock) => {
+        this.clock = clock;
+      });
+
+      app.midi.bind(this, "bpm", (bpm) => {
+        this.bpm = bpm;
+      });
+
+      app.midi.bind(this, "beat", (beat) => {
+        this.beat = beat;
       });
     }
 
@@ -126,6 +182,34 @@
 
     refreshMidi() {
       app.midi.refresh();
+    }
+
+    setClock(clock) {
+      if (app.midi.clock === clock) {
+        app.midi.setClock(null);
+      } else {
+        app.midi.setClock(clock);
+      }
+    }
+
+    setBPM(bpm) {
+      app.midi.setBPM(bpm);
+    }
+
+    beatClass(idx, beat) {
+      if (!Array.isArray(beat)) {
+        return;
+      }
+
+      return (beat[0] << 2) + beat[1] === idx ? "on-beat" : "";
+    }
+
+    setBeat(idx) {
+      let beat = (idx / 4) | 0;
+      let sxth = idx % 4;
+
+      app.midi.nextBeat = beat;
+      app.midi.next16th = sxth;
     }
 
     loadProject(project) {

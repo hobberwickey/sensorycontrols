@@ -213,7 +213,7 @@ export default class Screen {
     state.elapsed = Date.now() - this.epoch;
     state.bpm = this.bpm;
     state.beat = beat;
-    state.timing = this.timing;
+    // state.timing = this.timing;
     state.elements = this.videos;
 
     for (let i = 0; i < this.scripts.length; i++) {
@@ -926,87 +926,87 @@ export default class Screen {
     this.gl.deleteProgram(fx.program);
   }
 
-  setClock(clock, bpm) {
-    if (clock === "default") {
-      this.clock = setTimeout(
-        () => {
-          this.handleBeat({ data: [248] });
-        },
-        (60 / bpm) * 1000,
-      );
+  // setClock(clock, bpm) {
+  //   if (clock === "default") {
+  //     this.clock = setTimeout(
+  //       () => {
+  //         this.handleBeat({ data: [248] });
+  //       },
+  //       (60 / bpm) * 1000,
+  //     );
 
-      return;
-    }
+  //     return;
+  //   }
 
-    if (!!navigator.requestMIDIAccess) {
-      navigator.requestMIDIAccess().then(
-        (midiAccess) => {
-          for (const entry of midiAccess.inputs) {
-            if (entry[1].name === clock) {
-              this.clock = entry[1];
+  //   if (!!navigator.requestMIDIAccess) {
+  //     navigator.requestMIDIAccess().then(
+  //       (midiAccess) => {
+  //         for (const entry of midiAccess.inputs) {
+  //           if (entry[1].name === clock) {
+  //             this.clock = entry[1];
 
-              entry[1].onmidimessage = this.handleBeat.bind(this);
-            }
-          }
-        },
-        (msg) => {
-          console.error(`Failed to get MIDI access - ${msg}`);
-        },
-      );
-    } else {
-      console.log("No Midi Access");
-    }
-  }
+  //             entry[1].onmidimessage = this.handleBeat.bind(this);
+  //           }
+  //         }
+  //       },
+  //       (msg) => {
+  //         console.error(`Failed to get MIDI access - ${msg}`);
+  //       },
+  //     );
+  //   } else {
+  //     console.log("No Midi Access");
+  //   }
+  // }
 
-  handleBeat(e) {
-    if (e.data[0] === 248) {
-      this.pulseCount = (this.pulseCount + 1) % 6;
+  // handleBeat(e) {
+  //   if (e.data[0] === 248) {
+  //     this.pulseCount = (this.pulseCount + 1) % 6;
 
-      ////////// Tracking the count //////////
-      if (this.pulseCount === 0) {
-        if (this.resetBeat) {
-          this.beat = [1, 1];
-          this.timing = [Date.now(), Date.now()];
-          this.resetBeat = false;
-        } else {
-          let next4th = this.beat[0];
-          let next16th = (this.beat[1] + 1) % 5 || 1;
-          this.timing[1] = Date.now();
+  //     ////////// Tracking the count //////////
+  //     if (this.pulseCount === 0) {
+  //       if (this.resetBeat) {
+  //         this.beat = [1, 1];
+  //         this.timing = [Date.now(), Date.now()];
+  //         this.resetBeat = false;
+  //       } else {
+  //         let next4th = this.beat[0];
+  //         let next16th = (this.beat[1] + 1) % 5 || 1;
+  //         this.timing[1] = Date.now();
 
-          if (next16th === 1) {
-            next4th = (next4th + 1) % 5 || 1;
-            this.timing[0] = Date.now();
-          }
+  //         if (next16th === 1) {
+  //           next4th = (next4th + 1) % 5 || 1;
+  //           this.timing[0] = Date.now();
+  //         }
 
-          this.beat = [next4th, next16th];
-          this.beatTick = true;
-        }
-      }
-      ////////// End Tracking counting //////////
+  //         this.beat = [next4th, next16th];
+  //         this.beatTick = true;
+  //       }
+  //     }
+  //     ////////// End Tracking counting //////////
 
-      ////////// Tracking the BPM //////////
-      if (this.beatStart === null) {
-        this.beatStart = Date.now();
-      }
+  //     ////////// Tracking the BPM //////////
+  //     if (this.beatStart === null) {
+  //       this.beatStart = Date.now();
+  //     }
 
-      if (this.pulseCount === 0) {
-        let diff = Date.now() - this.beatStart;
-        let bpm = 60 / (diff / 250);
+  //     if (this.pulseCount === 0) {
+  //       let diff = Date.now() - this.beatStart;
+  //       let bpm = 60 / (diff / 250);
 
-        this.bpm = bpm;
-        this.beatStart = Date.now();
-      }
-      ////////// End BPM tracking //////////
-    }
-  }
+  //       this.bpm = bpm;
+  //       this.beatStart = Date.now();
+  //     }
+  //     ////////// End BPM tracking //////////
+  //   }
+  // }
 
-  setOne() {
-    let duration = 125 * (this.bpm / 60);
+  // setOne() {
+  //   let duration = 125 * (this.bpm / 60);
 
-    if (Date.now() - this.timing[1] < duration) {
-      this.beat = [1, 1];
-    } else {
-      this.resetBeat = true;
-    }
-  }
+  //   if (Date.now() - this.timing[1] < duration) {
+  //     this.beat = [1, 1];
+  //   } else {
+  //     this.resetBeat = true;
+  //   }
+  // }
 }
