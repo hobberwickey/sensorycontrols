@@ -2,14 +2,21 @@
   <div class="content">
     <div class="inner">
       <template :for="folders || []" :id="$value.key">
-        <div class="folder">
-          <label @click="toggle($event)"
-            ><span uk-icon="folder"></span> <span>{{$value.key}}</span></label
+        <div class="folder" :data-path="$value.key">
+          <label
+            @click="toggle($event)"
+            @dragover="handleOver($event)"
+            @dragenter="handleEnter($event)"
+            @dragleave="handleLeave($event)"
+            @drop="handleDrop($event)"
           >
+            <span uk-icon="folder"></span> <span>{{$value.key}}</span>
+          </label>
           <folder-list
             :items="$value.value"
             :actions="actions"
             :dragtype="dragtype"
+            :arrange="arrange"
           ></folder-list>
         </div>
       </template>
@@ -46,7 +53,7 @@
     }
 
     static get observedProperties() {
-      return ["items", "folders", "files", "actions", "dragtype"];
+      return ["items", "folders", "files", "actions", "dragtype", "arrange"];
     }
 
     connected() {
@@ -55,6 +62,53 @@
       });
 
       this.sort();
+    }
+
+    handleOver(e) {
+      e.preventDefault();
+    }
+
+    handleEnter(e) {
+      if (!!e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
+        return;
+      }
+
+      this.classList.add("dragover");
+    }
+
+    handleLeave(e) {
+      if (!!e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
+        return;
+      }
+
+      this.classList.remove("dragover");
+    }
+
+    handleDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      let data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      let path = this.parentPaths(e.target);
+
+      console.log(this.arrange, this.dragtype);
+
+      if (!!this.arrange) {
+        this.arrange(data, path);
+      }
+    }
+
+    parentPaths(el) {
+      let paths = [];
+      while (el !== document.body) {
+        if (!!el.dataset?.path) {
+          paths.unshift(el.dataset.path);
+        }
+
+        el = el.parentNode;
+      }
+
+      return paths.join("/");
     }
 
     toggle(e) {

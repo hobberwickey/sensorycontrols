@@ -51,7 +51,12 @@
       </li>
     </template>
     <template :if="tab === 'scripts'">
-      <li>
+      <li
+        @dragover="handleOver($event)"
+        @dragenter="handleEnter($event)"
+        @dragleave="handleLeave($event)"
+        @drop="handleScriptDrop($event)"
+      >
         <div class="uk-width-1-1 uk-flex actions">
           <div class="btn" @click="openNewScript()">Add Script</div>
         </div>
@@ -59,6 +64,7 @@
           :items="sorted(scripts)"
           :actions="actions?.scripts || []"
           :dragtype="'script'"
+          :arrange="(d, p) => arrangeScripts(d, p)"
         ></folder-list>
         <!-- <div class="obj-list">
           <template :for="scripts" :id="$value.id">
@@ -189,6 +195,26 @@
       this.tab = tab;
     }
 
+    handleOver(e) {
+      e.preventDefault();
+    }
+
+    handleEnter(e) {
+      if (!!e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
+        return;
+      }
+
+      // this.classList.add("dragover");
+    }
+
+    handleLeave(e) {
+      if (!!e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
+        return;
+      }
+
+      // this.classList.remove("dragover");
+    }
+
     addShape(type) {
       app.state.addShape(type);
     }
@@ -217,6 +243,35 @@
 
     editScript(label, code, id, path) {
       storage.upsertItem("scripts", { id, label, code, path });
+    }
+
+    async arrangeScripts(data, path) {
+      if (!data.type === "scripts") {
+        return;
+      }
+
+      let script = await storage.getItem("scripts", +data.id);
+
+      if (!script) {
+        console.log("No Script", +data.id);
+      }
+
+      console.log(script, path);
+
+      storage.upsertItem("scripts", {
+        id: script.id,
+        label: script.label,
+        code: script.code,
+        path: path,
+      });
+    }
+
+    async handleScriptDrop(e) {
+      e.preventDefault();
+
+      let data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+      this.arrangeScripts(data, "");
     }
 
     deleteScript(script) {

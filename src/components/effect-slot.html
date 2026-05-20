@@ -9,7 +9,7 @@
       {{idx + 1}}
     </div>
     <div class="select-display">{{target?.label || "Unassigned"}}</div>
-    <div class="select-list">
+    <!-- <div class="select-list">
       <ul class="uk-list">
         <li @click="updateSelection(null)">Empty</li>
         <li @click="updateSelection('__script')">Script</li>
@@ -19,7 +19,7 @@
           </template>
         </template>
       </ul>
-    </div>
+    </div> -->
     <div class="select-actions">
       <div class="select-handle" @click="openEditScript($event)">
         <app-icon
@@ -106,6 +106,39 @@
     isScript(target) {
       return target?.values?.length === 2;
     }
+
+    // handleOver(e) {
+    //   if (e.currentTarget.contains(e.relatedTarget)) {
+    //     return;
+    //   }
+
+    //   this.classList.add("dragover");
+    // }
+
+    // handleEnter(e) {
+    //   if (e.currentTarget.contains(e.relatedTarget)) {
+    //     return;
+    //   }
+
+    //   this.classList.add("dragover");
+    // }
+
+    // handleLeave(e) {
+    //   if (e.currentTarget.contains(e.relatedTarget)) {
+    //     return;
+    //   }
+
+    //   this.classList.remove("dragover");
+    // }
+
+    // handleDrop(e) {
+    //   e.preventDefault();
+
+    //   let data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+    //   app.setSlot(this.idx, data.id, data.type);
+    //   app.updateSelected("slot", this.idx);
+    // }
 
     openEditScript(e) {
       e.preventDefault();
