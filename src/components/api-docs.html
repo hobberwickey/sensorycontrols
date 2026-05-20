@@ -807,8 +807,9 @@ setValues("Cosine Palette", 0, 1, random_value);
 
       blocks.forEach((block) => {
         let editor = ace.edit(block);
+
+        editor.session.setMode("ace/mode/javascript");
         editor.setOptions({
-          mode: "ace/mode/javascript",
           maxLines: Infinity,
           showGutter: false,
           readOnly: true,

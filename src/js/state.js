@@ -469,11 +469,24 @@ export class State extends ContextBlocks {
 	handleStateSync(msg) {
 		let { action, updates, data } = msg;
 
-		let { loading, selected, scripts, effects, videos, shapes, slots } =
-			updates;
+		let {
+			loading,
+			selected,
+			scripts,
+			effects,
+			videos,
+			shapes,
+			slots,
+			bpm,
+			beat,
+		} = updates;
+
+		console.log(updates);
 
 		this.loading = loading;
 		this.selected = { ...selected };
+		this.bpm = bpm;
+		this.beat = beat;
 
 		this.videos = videos.map((v, idx) => {
 			let video = this.videos[idx];

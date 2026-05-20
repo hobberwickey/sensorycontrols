@@ -105,19 +105,29 @@ class App extends ContextBlocks {
 		});
 	}
 
-	setSlot(idx, effect) {
+	async setSlot(idx, id, type) {
 		let slots = this.state.slots;
 
 		let old = slots[idx].target;
 
-		if (effect === null) {
+		if (id === null) {
 			slots[idx].target = null;
-		} else if (effect === "__script") {
+		} else if (type === "script") {
+			let scripts = await storage.get("scripts", id);
+			let script = (scripts || [])[0] || null;
+
+			if (!script) {
+				return console.log("Couldn't find script");
+			}
+
 			slots[idx].target = this.state.scripts[idx];
 			slots[idx].target.values = [0, 0];
-		} else {
-			slots[idx].target =
-				this.state.effects.find((e) => e.id === effect) || null;
+			slots[idx].target.code = script.code;
+			slots[idx].target.label = script.label;
+			slots[idx].target.path = script.path;
+			slots[idx].target.id = script.id;
+		} else if (type === "effect") {
+			slots[idx].target = this.state.effects.find((e) => e.id === id) || null;
 			slots[idx].target.values = new Array(6).fill(null).map((v) => [0, 0]);
 		}
 

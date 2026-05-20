@@ -170,6 +170,9 @@
             icon: "trash",
             class: "delete",
             label: "Delete Script",
+            active: ($idx, $key, $value) => {
+              return true;
+            },
             click: ($idx, $key, $value) => {
               this.deleteScript($value);
             },
@@ -199,7 +202,7 @@
       editor.save = this.editScript.bind(this);
       editor.code = `// start typing your script here. Documentation can be found to the left`;
       editor.label = `Script ${this.scripts.length + 1}`;
-      editor.id = gen_id();
+      // editor.id = gen_id();
       document.body.appendChild(editor);
     }
 
@@ -207,13 +210,13 @@
       let editor = document.createElement("script-editor");
       editor.save = this.editScript.bind(this);
       editor.code = script.code;
-      editor.label = script.label;
+      editor.label = `${script.path}/${script.label}`;
       editor.id = script.id;
       document.body.appendChild(editor);
     }
 
     editScript(label, code, id, path) {
-      storage.upsertItem("scripts", { id, label, code });
+      storage.upsertItem("scripts", { id, label, code, path });
     }
 
     deleteScript(script) {

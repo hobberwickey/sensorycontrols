@@ -21,14 +21,23 @@
       </ul>
     </div>
     <div class="select-actions">
-      <template :if="isScript(target)">
-        <div class="select-handle" @click="openEdit($event)">
-          <span data-uk-icon="icon: pencil"></span>
-        </div>
-      </template>
-      <div class="select-handle" @click="toggleActive($event)">
-        <span data-uk-icon="icon: triangle-down"></span>
+      <div class="select-handle" @click="openEditScript($event)">
+        <app-icon
+          :icon="'code'"
+          aria-label="Live Code: Script"
+          uk-tooltip="Live Code: Script"
+        ></app-icon>
       </div>
+      <div class="select-handle" @click="openEditEffect($event)">
+        <app-icon
+          :icon="'loader'"
+          aria-label="Live Code: Effect"
+          uk-tooltip="Live Code: Effect"
+        ></app-icon>
+      </div>
+      <!-- <div class="select-handle" @click="toggleActive($event)">
+        <span data-uk-icon="icon: triangle-down"></span>
+      </div> -->
     </div>
   </div>
 </template>
@@ -88,7 +97,8 @@
         e.preventDefault();
 
         let data = JSON.parse(e.dataTransfer.getData("text/plain"));
-        app.setSlot(this.idx, data.id);
+
+        app.setSlot(this.idx, data.id, data.type);
         app.updateSelected("slot", this.idx);
       });
     }
@@ -97,24 +107,69 @@
       return target?.values?.length === 2;
     }
 
-    openEdit(e) {
+    openEditScript(e) {
       e.preventDefault();
       e.stopPropagation();
       let editor = document.createElement("script-editor");
+
       editor.save = this.editScript.bind(this);
-      editor.code = this.slot.target.code;
-      editor.label = this.slot.target.label;
+      editor.code = this.slot.target?.code || "";
+      editor.label = this.slot.target?.label || `New Script ${this.idx + 1}`;
+
+      if (this.slot.target?.id) {
+        editor.id = this.slot.target?.id;
+      }
+
       editor.session = true;
 
       document.body.appendChild(editor);
     }
 
-    editScript(label, code, id) {
-      app.updateSlot(this.idx, { label, code });
+    openEditEffect(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      let editor = document.createElement("effect-editor");
+      let label =
+        (this.slot.target?.path || "") + (this.slot.target?.label || "");
+
+      editor.save = this.editEffect.bind(this);
+      editor.code = this.slot.target?.code || "";
+      editor.label = label || `New Effect ${this.idx + 1}`;
+
+      if (this.slot.target?.id) {
+        editor.id = this.slot.target?.id;
+      }
+
+      editor.session = true;
+
+      document.body.appendChild(editor);
+    }
+
+    async editScript(label, code, id, path) {
+      app.updateSlot(this.idx, { label, code, path });
 
       if (!!id) {
         storage.upsertItem("scripts", { id, label, code });
       }
+    }
+
+    async editEffect(label, code, id, path) {
+      let existing = await storage.getItem("effects", id);
+      let effect = existing || {
+        removable: true,
+        active: false,
+        effect_x: "X",
+        effect_y: "Y",
+        defaults: [0, 0],
+      };
+
+      effect.id = id;
+      effect.path = path;
+      effect.label = label;
+      effect.shader = code;
+
+      let obj = await storage.upsertItem("effects", effect);
+      app.updateEffect(obj);
     }
 
     toggleActive(e) {

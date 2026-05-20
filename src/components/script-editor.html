@@ -41,16 +41,28 @@
       <div class="footer">
         <div class="fit">
           <template :if="session">
-            <div :class="'btn' + (!dirty ? ' disabled' : '')" @click="onSave()">
+            <div
+              :class="'btn' + (!dirty ? ' disabled' : '')"
+              @click="onUpdate()"
+            >
+              Live Update
+            </div>
+          </template>
+
+          <template :if="!!id">
+            <div
+              :class="'btn' + (!dirty ? ' disabled' : '')"
+              @click="onSave($event)"
+            >
               Save
             </div>
           </template>
 
           <div
             :class="'btn' + (!dirty ? ' disabled' : '')"
-            @click="onSaveTemplate($event)"
+            @click="onSaveNew($event)"
           >
-            Save Template
+            Save New
           </div>
         </div>
         <div>
@@ -80,6 +92,7 @@
         "dirty",
         "error",
         "label",
+        "path",
         "code",
         "scripts",
         "save",
@@ -91,10 +104,14 @@
       this.dirty = false;
       this.editor = ace.edit(this.querySelector(".code-box .editor"));
       this.editor.session.setMode("ace/mode/javascript");
+
       this.editor.setValue(this.code, -1);
       this.editor.getSession().on("change", () => {
         this.dirty = true;
       });
+
+      const beautify = ace.require("ace/ext/beautify"); // get reference to extension
+      beautify.beautify(this.editor.session);
 
       storage.bind(this, "scripts", (scripts) => {
         this.scripts = scripts;
@@ -115,12 +132,12 @@
       let script = await storage.getItem("scripts", evt.target.value);
 
       this.id = script.id;
-      this.label = script.label;
+      this.label = (script.path || "") + script.label;
       this.editor.setValue(script.code, -1);
       this.dirty = true;
     }
 
-    onSave() {
+    async onUpdate() {
       if (!this.dirty) {
         return;
       }
@@ -134,63 +151,47 @@
       this.dirty = false;
     }
 
-    async onSaveTemplate(e) {
+    async onSave(e) {
       if (!this.dirty) {
         return;
       }
 
+      let slug = this.label;
+      let parts = slug.split("/");
+      let label = parts.pop();
+      let path = parts.join("/");
+
       let code = this.editor.getValue();
-      let existing = await storage.getItem("scripts", this.id);
+      let existing = await storage.getItem("scripts", +this.id);
 
-      if (!this.id) {
-        this.id = gen_id();
+      if (!existing) {
+        return console.warn("No existing found");
       }
 
-      if (!!this.save) {
-        if (existing !== null) {
-          document.querySelectorAll("confirmation-modal").forEach((m) => {
-            m.remove();
-          });
+      this.save(label, code, +this.id, path);
+      this.dirty = false;
+    }
 
-          let confirmation = document.createElement("confirmation-modal");
-          let coords = e.target.getBoundingClientRect();
-
-          confirmation.headline =
-            "Save over existing template, or create a new template?";
-          confirmation.options = [
-            {
-              action: () => {
-                this.save(this.label, code, this.id);
-                confirmation.parentNode.removeChild(confirmation);
-              },
-              label: "Save Existing",
-            },
-            {
-              action: () => {
-                this.save(this.label, code, gen_id());
-                confirmation.parentNode.removeChild(confirmation);
-              },
-              label: "Save New",
-            },
-            {
-              action: () => {
-                confirmation.parentNode.removeChild(confirmation);
-              },
-              label: "Cancel",
-            },
-          ];
-
-          document.body.appendChild(confirmation);
-
-          confirmation.style.top = coords.y - 10;
-          confirmation.style.left = coords.x + coords.width + 10;
-
-          return;
-        }
-
-        this.save(this.label, code, this.id);
+    async onSaveNew(e) {
+      if (!this.dirty) {
+        return;
       }
 
+      let slug = this.label;
+      let parts = slug.split("/");
+      let label = parts.pop();
+      let path = parts.join("/");
+
+      let id = gen_id();
+      let code = this.editor.getValue();
+      let existing = await storage.getItem("scripts", id);
+
+      if (!!existing) {
+        console.log("Id collision, resaving");
+        return this.onSaveNew(e);
+      }
+
+      this.save(label, code, id, path);
       this.dirty = false;
     }
 

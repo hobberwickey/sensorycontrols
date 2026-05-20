@@ -236,6 +236,10 @@ class MIDI extends ContextBlocks {
 			this.next16th = 0;
 		}
 
+		if (taps > 7) {
+			this.lastTaps.shift();
+		}
+
 		clearTimeout(this.tapTimeout);
 		this.tapTimeout = setTimeout(() => {
 			this.lastTaps = null;
