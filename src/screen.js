@@ -16,6 +16,7 @@ window.addEventListener("load", () => {
 
 	screen.width = 1280;
 	screen.height = 720;
+	screen.editable = true;
 
 	document.body.appendChild(screen);
 

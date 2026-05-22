@@ -38,7 +38,7 @@ export class State extends ContextBlocks {
 			scripts: new Array(12).fill().map((_, idx) => new Script(idx)),
 			effects: [],
 			videos: new Array(6).fill().map((_, idx) => new Video(idx)),
-			shapes: [new Shape({ label: "Quad 1", type: "quad" })],
+			shapes: [],
 
 			/** Metronome **/
 			beat: [0, 0],
@@ -167,7 +167,7 @@ export class State extends ContextBlocks {
 
 		// Add events to the initial shape objects
 		this.shapes.map((shape, idx) => {
-			this.addShapeEvents(shape, idx);
+			this.addShapeEvents(shape);
 		});
 
 		// Add events to the slot objects
@@ -224,7 +224,7 @@ export class State extends ContextBlocks {
 		});
 		let idx = this.shapes.length;
 
-		this.addShapeEvents(shape, idx);
+		this.addShapeEvents(shape);
 		this.shapes = [...this.shapes, shape];
 
 		return shape;
@@ -236,17 +236,17 @@ export class State extends ContextBlocks {
 	}
 
 	// Add broadcast events to a shape
-	addShapeEvents(shape, idx) {
+	addShapeEvents(shape) {
 		shape.listen("label", (label) => {
-			this.post("update_shape", { label }, { idx });
+			this.post("update_shape", { label }, { id: shape.id });
 		});
 
 		shape.listen("opacity", (opacity) => {
-			this.post("update_shape", { opacity }, { idx });
+			this.post("update_shape", { opacity }, { id: shape.id });
 		});
 
 		shape.listen("tris", (tris) => {
-			this.post("update_shape", { tris }, { idx });
+			this.post("update_shape", { tris }, { id: shape.id });
 		});
 	}
 
@@ -336,7 +336,7 @@ export class State extends ContextBlocks {
 		}
 
 		if (action === "update_shape") {
-			target = this.shapes[data.idx];
+			target = this.shapes.find((s) => s.id === data.id);
 		}
 
 		if (action === "update_slot") {
@@ -480,8 +480,6 @@ export class State extends ContextBlocks {
 			bpm,
 			beat,
 		} = updates;
-
-		console.log(updates);
 
 		this.loading = loading;
 		this.selected = { ...selected };

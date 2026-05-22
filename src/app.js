@@ -27,6 +27,8 @@ class App extends ContextBlocks {
 		this.midi.listen("beat", (beat) => {
 			this.state.beat = beat;
 		});
+
+		this.state.addShape("quad");
 	}
 
 	updateSelected(type, idx) {
