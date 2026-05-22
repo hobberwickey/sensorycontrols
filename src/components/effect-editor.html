@@ -41,16 +41,28 @@
       <div class="footer">
         <div class="fit">
           <template :if="session">
-            <div :class="'btn' + (!dirty ? ' disabled' : '')" @click="onSave()">
+            <div
+              :class="'btn' + (!dirty ? ' disabled' : '')"
+              @click="onUpdate()"
+            >
+              Live Update
+            </div>
+          </template>
+
+          <template :if="!!id">
+            <div
+              :class="'btn' + (!dirty ? ' disabled' : '')"
+              @click="onSave($event)"
+            >
               Save
             </div>
           </template>
 
           <div
             :class="'btn' + (!dirty ? ' disabled' : '')"
-            @click="onSaveTemplate($event)"
+            @click="onSaveNew($event)"
           >
-            Save Template
+            Save New
           </div>
         </div>
         <div>
@@ -64,7 +76,7 @@
 
 <script>
   import { storage } from "../js/storage.js";
-  import { gen_slug, validate_shader } from "../js/utils.js";
+  import { gen_id, validate_shader } from "../js/utils.js";
 
   import { Effects } from "../js/effects.js";
 
@@ -128,33 +140,34 @@
       this.dirty = true;
     }
 
-    onSave() {
-      if (!this.dirty) {
-        return;
-      }
+    async onUpdate() {
+      console.log("Live coding a shader will be cool, but not yet");
+      // if (!this.dirty) {
+      //   return;
+      // }
 
-      let code = this.editor.getValue();
+      // let code = this.editor.getValue();
 
-      if (!!this.save) {
-        this.save(this.label, code);
-      }
+      // if (!!this.save) {
+      //   this.save(this.label, code);
+      // }
 
-      this.dirty = false;
+      // this.dirty = false;
     }
 
-    async onSaveTemplate(e) {
+    async onSave(e) {
       if (!this.dirty) {
         return;
       }
 
       if (!this.label.trim()) {
-        return console.warn("Label Required");
+        this.error = "Label eequired";
+        return;
       }
 
       let slug = this.label;
       let parts = slug.split("/");
-      let target = parts.pop();
-      let id = this.id || target;
+      let label = parts.pop();
       let path = parts.join("/");
 
       let code = this.editor.getValue();
@@ -165,51 +178,40 @@
         return;
       }
 
-      if (!!this.save) {
-        if (!!existing) {
-          document.querySelectorAll("confirmation-modal").forEach((m) => {
-            m.remove();
-          });
+      this.save(label, code, +this.id, path);
+      this.dirty = false;
+    }
 
-          let confirmation = document.createElement("confirmation-modal");
-          let coords = e.target.getBoundingClientRect();
-
-          confirmation.headline =
-            "Save over existing template, or create a new template?";
-          confirmation.options = [
-            {
-              action: () => {
-                this.save(this.label, code, id, path);
-                confirmation.parentNode.removeChild(confirmation);
-              },
-              label: "Save Existing",
-            },
-            {
-              action: () => {
-                this.save(this.label, code, id + "_x", path);
-                confirmation.parentNode.removeChild(confirmation);
-              },
-              label: "Save New",
-            },
-            {
-              action: () => {
-                confirmation.parentNode.removeChild(confirmation);
-              },
-              label: "Cancel",
-            },
-          ];
-
-          document.body.appendChild(confirmation);
-
-          confirmation.style.top = coords.y - 10;
-          confirmation.style.left = coords.x + coords.width + 10;
-
-          return;
-        }
-
-        this.save(this.label, code, id, path);
+    async onSaveNew(e) {
+      if (!this.dirty) {
+        return;
       }
 
+      if (!this.label.trim()) {
+        this.error = "Label eequired";
+        return;
+      }
+
+      let slug = this.label;
+      let parts = slug.split("/");
+      let label = parts.pop();
+      let path = parts.join("/");
+
+      let id = gen_id();
+      let code = this.editor.getValue();
+
+      let existing = await storage.getItem("effects", +id);
+      if (!!existing) {
+        console.log("Id collision, resaving");
+        return this.onSaveNew(e);
+      }
+
+      this.error = validate_shader(code);
+      if (!!this.error) {
+        return;
+      }
+
+      this.save(label, code, +id, path);
       this.dirty = false;
     }
 

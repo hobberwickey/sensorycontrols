@@ -91,8 +91,6 @@
       let data = JSON.parse(e.dataTransfer.getData("text/plain"));
       let path = this.parentPaths(e.target);
 
-      console.log(this.arrange, this.dragtype);
-
       if (!!this.arrange) {
         this.arrange(data, path);
       }

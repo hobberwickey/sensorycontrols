@@ -4,6 +4,7 @@
       :width="360"
       :height="240"
       :fullscreen="false"
+      :editable="false"
     ></output-screen>
     <a
       href="javascript:void(0)"
@@ -66,31 +67,15 @@
           :dragtype="'script'"
           :arrange="(d, p) => arrangeScripts(d, p)"
         ></folder-list>
-        <!-- <div class="obj-list">
-          <template :for="scripts" :id="$value.id">
-            <div class="obj">
-              <div>{{$value.label}}</div>
-              <a
-                href="javascript:void(0)"
-                uk-icon="icon: pencil"
-                @click="openEditScript($value)"
-                aria-label="Edit Script"
-                uk-tooltip="Edit Script"
-              ></a>
-              <a
-                href="javascript:void(0)"
-                uk-icon="icon: trash"
-                @click="deleteScript($value)"
-                aria-label="Delete Script"
-                uk-tooltip="Delete Script"
-              ></a>
-            </div>
-          </template>
-        </div> -->
       </li>
     </template>
     <template :if="tab === 'effects'">
-      <li>
+      <li
+        @dragover="handleOver($event)"
+        @dragenter="handleEnter($event)"
+        @dragleave="handleLeave($event)"
+        @drop="handleEffectDrop($event)"
+      >
         <div class="uk-width-1-1 uk-flex actions">
           <div class="btn" @click="openNewEffect()">Add Effect</div>
         </div>
@@ -98,6 +83,7 @@
           :items="sorted(effects)"
           :actions="actions?.effects || []"
           :dragtype="'effect'"
+          :arrange="(d, p) => arrangeEffects(d, p)"
         ></folder-list>
       </li>
     </template>
@@ -314,15 +300,35 @@
       app.updateEffect(obj);
     }
 
-    async assignEffect(effect, idx) {
-      // effect.active = !effect.active;
-      // let obj = await storage.upsertItem("effects", effect);
-      // app.updateEffect(effect);
-    }
-
     deleteEffect(effect) {
       storage.removeItem("effects", effect);
       app.removeEffect(effect);
+    }
+
+    async arrangeEffects(data, path) {
+      if (!data.type === "effects") {
+        return console.warn("Not an effect");
+      }
+
+      let existing = await storage.getItem("effects", +data.id);
+
+      if (!existing) {
+        return console.warn("No Effect", +data.id);
+      }
+
+      existing.path = path;
+
+      storage.upsertItem("effects", existing);
+    }
+
+    async handleEffectDrop(e) {
+      e.preventDefault();
+
+      let data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+      console.log(data);
+
+      this.arrangeEffects(data, "");
     }
 
     sorted(items) {

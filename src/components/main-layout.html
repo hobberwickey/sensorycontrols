@@ -110,12 +110,26 @@
         let { slots, effects, scripts } = app.state;
         let target = slots[slot]?.target;
 
+        if (!!target) {
+          target.bindOnce(this, "values", (values) => {
+            console.log(values);
+
+            if (target.type === "script") {
+              this.values = [...values];
+            }
+
+            if (target.type === "effect") {
+              this.values = [...target.values[video]];
+            }
+          });
+        }
+
         if (!!target && video !== null) {
-          if (target instanceof Script) {
+          if (target.type === "script") {
             this.values = [...target.values];
           }
 
-          if (target instanceof Effect) {
+          if (target.type === "effect") {
             this.values = [...target.values[video]];
           }
         } else {

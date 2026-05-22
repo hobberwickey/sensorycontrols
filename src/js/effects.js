@@ -1,7 +1,7 @@
 export const Effects = [
 	{
-		id: "color_opacity",
-		path: "default/keying",
+		id: 1,
+		path: "default",
 		removable: false,
 		active: true,
 		label: "Chroma Key",
@@ -43,8 +43,8 @@ export const Effects = [
 	  `,
 	},
 	{
-		id: "brightness_opacity",
-		path: "default/keying",
+		id: 2,
+		path: "default",
 		removable: false,
 		active: true,
 		label: "Luma Key",
@@ -109,7 +109,7 @@ export const Effects = [
 	  `,
 	},
 	{
-		id: "cosine_palette",
+		id: 3,
 		path: "default",
 		removable: false,
 		active: true,
@@ -160,7 +160,7 @@ export const Effects = [
 	  `,
 	},
 	{
-		id: "pixelate",
+		id: 4,
 		path: "default",
 		removable: false,
 		active: true,
@@ -193,7 +193,7 @@ export const Effects = [
 		`,
 	},
 	{
-		id: "prism",
+		id: 5,
 		path: "default",
 		removable: false,
 		active: true,
@@ -220,7 +220,7 @@ export const Effects = [
 		`,
 	},
 	{
-		id: "kaleidoscope",
+		id: 6,
 		path: "default",
 		removable: false,
 		active: true,
@@ -258,7 +258,7 @@ export const Effects = [
 		`,
 	},
 	{
-		id: "zoom",
+		id: 7,
 		path: "default",
 		removable: false,
 		active: true,
@@ -293,7 +293,7 @@ export const Effects = [
 		`,
 	},
 	{
-		id: "shift",
+		id: 8,
 		path: "default",
 		removable: false,
 		active: true,
@@ -340,7 +340,7 @@ export const Effects = [
 		`,
 	},
 	{
-		id: "color_adjust",
+		id: 9,
 		path: "default",
 		removable: false,
 		active: true,

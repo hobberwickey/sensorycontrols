@@ -156,6 +156,14 @@
         return;
       }
 
+      if (!this.label) {
+        this.error = "Label required";
+        return;
+      }
+
+      // TODO validate code
+      this.error = null;
+
       let slug = this.label;
       let parts = slug.split("/");
       let label = parts.pop();
@@ -184,14 +192,14 @@
 
       let id = gen_id();
       let code = this.editor.getValue();
-      let existing = await storage.getItem("scripts", id);
+      let existing = await storage.getItem("scripts", +id);
 
       if (!!existing) {
         console.log("Id collision, resaving");
         return this.onSaveNew(e);
       }
 
-      this.save(label, code, id, path);
+      this.save(label, code, +id, path);
       this.dirty = false;
     }
 
