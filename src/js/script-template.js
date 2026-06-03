@@ -119,7 +119,6 @@ export const ScriptTemplate = function (script) {
 
 			for (let i=0; i<videos.length; i++) {
 				let video = videos[i];
-
 				for (var j=0; j<state.shapes.length; j++) {
 					let shape = state.shapes[j];
 					shape.opacity[video] = opacity;

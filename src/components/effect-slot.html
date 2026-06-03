@@ -28,11 +28,11 @@
           uk-tooltip="Live Code: Script"
         ></app-icon>
       </div>
-      <div class="select-handle" @click="openEditEffect($event)">
+      <div class="select-handle" @click="clearSlot()">
         <app-icon
-          :icon="'loader'"
-          aria-label="Live Code: Effect"
-          uk-tooltip="Live Code: Effect"
+          :icon="'trash'"
+          aria-label="Clear Slot"
+          uk-tooltip="Clear Slot"
         ></app-icon>
       </div>
       <!-- <div class="select-handle" @click="toggleActive($event)">
@@ -203,6 +203,10 @@
 
       let obj = await storage.upsertItem("effects", effect);
       app.updateEffect(obj);
+    }
+
+    clearSlot() {
+      app.setSlot(this.idx, null);
     }
 
     toggleActive(e) {

@@ -143,11 +143,11 @@ export class State extends ContextBlocks {
 		});
 
 		this.listen("bpm", (bpm) => {
-			this.post("update_metonome", { bpm });
+			this.post("update_metronome", { bpm });
 		});
 
 		this.listen("beat", (beat) => {
-			this.post("update_metonome", { beat });
+			this.post("update_metronome", { beat });
 		});
 
 		// Add events to the script objects
@@ -278,6 +278,10 @@ export class State extends ContextBlocks {
 
 	// Adds broadcast events to a script
 	addScriptEvents(script, idx) {
+		script.listen("id", (id) => {
+			this.post("update_script", { id }, { idx });
+		});
+
 		script.listen("label", (label) => {
 			this.post("update_script", { label }, { idx });
 		});
@@ -347,7 +351,7 @@ export class State extends ContextBlocks {
 			target = this;
 		}
 
-		if (action === "update_metonome") {
+		if (action === "update_metronome") {
 			target = this;
 		}
 
@@ -446,6 +450,7 @@ export class State extends ContextBlocks {
 
 		if (action === "sync_video") {
 			this.loading = updates.loading;
+			this.loading_time = updates.loading_time;
 			// TODO: do something with the loading_time
 		}
 
@@ -497,10 +502,10 @@ export class State extends ContextBlocks {
 		});
 
 		this.shapes = shapes.map((s, idx) => {
-			let shape = this.shapes[idx];
+			let shape = this.shapes.find((p) => p.id === s.id);
 
 			if (!shape) {
-				shape = new Shape(shape);
+				shape = new Shape(s);
 				this.addShapeEvents(shape);
 			}
 

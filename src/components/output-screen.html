@@ -73,13 +73,13 @@
           return;
         }
 
-        let { loading } = this.state;
+        let { loading, loading_time } = this.state;
 
         if (loading !== null) {
           let file = files[loading];
 
           if (!!file) {
-            this.screen.loadVideo(loading, file);
+            this.screen.loadVideo(loading, file, loading_time);
           } else {
             this.screen.removeVideo(loading);
           }
@@ -111,7 +111,7 @@
         additions.map((e, idx) => {
           e.listen("code", (code) => {
             if (code !== "") {
-              this.screen.updateEffect(e, this.state.effects.length - 1 + idx);
+              this.screen.updateEffect(e);
             }
           });
 
@@ -128,7 +128,7 @@
       this.state.effects.map((e, idx) => {
         e.listen("code", (code, oldCode) => {
           if (code !== "") {
-            this.screen.updateEffect(e, idx);
+            this.screen.updateEffect(e);
           }
         });
       });

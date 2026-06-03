@@ -86,7 +86,6 @@
       });
 
       this.video.bind(this, "loaded", (l) => {
-        console.log(l);
         if (!this.loaded && l) {
           this.setPreview();
         }

@@ -66,6 +66,7 @@
           :actions="actions?.scripts || []"
           :dragtype="'script'"
           :arrange="(d, p) => arrangeScripts(d, p)"
+          :order="'label'"
         ></folder-list>
       </li>
     </template>
@@ -84,6 +85,7 @@
           :actions="actions?.effects || []"
           :dragtype="'effect'"
           :arrange="(d, p) => arrangeEffects(d, p)"
+          :order="'label'"
         ></folder-list>
       </li>
     </template>

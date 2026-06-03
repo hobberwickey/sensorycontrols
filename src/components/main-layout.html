@@ -112,7 +112,9 @@
 
         if (!!target) {
           target.bindOnce(this, "values", (values) => {
-            console.log(values);
+            if (!video) {
+              return;
+            }
 
             if (target.type === "script") {
               this.values = [...values];

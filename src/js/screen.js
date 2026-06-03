@@ -532,6 +532,7 @@ export default class Screen {
     gl.linkProgram(program);
 
     let success = gl.getProgramParameter(program, gl.LINK_STATUS);
+
     if (success) {
       let positionLocation = gl.getAttribLocation(program, "a_position");
       let positionBuffer = gl.createBuffer();
@@ -723,7 +724,15 @@ export default class Screen {
     return frameBuffer;
   }
 
-  loadVideo(idx, file) {
+  loadVideo(idx, file, loading_time = 0) {
+    this.videos[idx].onplay = () => {
+      if (!!loading_time) {
+        setTimeout(() => {
+          this.videos[idx].currentTime = loading_time;
+        }, 10);
+      }
+    };
+
     this.videos[idx].src = URL.createObjectURL(file);
   }
 
@@ -812,7 +821,7 @@ export default class Screen {
           ScriptTemplate(code),
         );
 
-        let obj = this.state.scripts.find((s) => (s.id = slot.target.id));
+        let obj = this.state.scripts.find((s) => s.id === slot.target.id);
 
         return {
           script: obj,
@@ -831,16 +840,14 @@ export default class Screen {
       ...effects.filter((effect) => {
         return !slots.find((slot) => slot?.target?.id === effect.id);
       }),
-    ]
-      .map((e) => {
-        let obj = this.state.effects.find((f) => f.id === e.id);
+    ].map((e) => {
+      let obj = this.state.effects.find((f) => f.id === e.id);
 
-        return {
-          effect: obj,
-          fx: this.attrs.effects.find((fx) => fx.id === e.id),
-        };
-      })
-      .filter((e) => e.idx !== -1);
+      return {
+        effect: obj,
+        fx: this.attrs.effects.find((fx) => fx.id === e.id),
+      };
+    });
 
     slots.map((slot, idx) => {
       if (slot?.type !== "script") {
@@ -876,9 +883,7 @@ export default class Screen {
     this.updateSlots();
   }
 
-  updateEffect(effect, idx) {
-    console.log("Updating Effect", idx, effect);
-
+  updateEffect(effect) {
     if (!effect.code) {
       return { error: "No Code" };
     }
@@ -888,7 +893,8 @@ export default class Screen {
     });
 
     if (existing !== -1) {
-      return this.updateEffect(effect, idx);
+      return;
+      // return this.updateEffect(effect, idx);
     }
 
     let program = this.createProgram(
@@ -899,16 +905,26 @@ export default class Screen {
     );
 
     if (program !== null) {
-      let old = this.attrs.effects[idx];
-
-      this.attrs.effects[idx] = program;
-      this.effects.map((f) => {
-        if (f.fx.id === effect.id) {
-          f.fx = program;
-        }
+      let oldIdx = this.attrs.effects.findIndex((f) => {
+        return f.id === effect.id;
       });
 
-      this.gl.deleteProgram(old.program);
+      if (oldIdx !== -1) {
+        let oldProgram = this.attrs.effects[oldIdx].program;
+
+        this.attrs.effects[oldIdx] = program;
+        this.effects.map((f) => {
+          if (f.fx.id === effect.id) {
+            f.fx = program;
+          }
+        });
+
+        console.log("Old Program:", oldProgram, "New Program:", program);
+
+        this.gl.deleteProgram(oldProgram);
+      } else {
+        console.log("Couldn't find existing effect", effect.id);
+      }
     }
 
     this.updateSlots();

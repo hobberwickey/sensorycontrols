@@ -84,11 +84,11 @@ class App extends ContextBlocks {
 		let { target } = this.state.slots[slot];
 
 		if (target instanceof Effect) {
-			target.values[video][idx] = value;
+			target.values[video][idx] = parseFloat(value);
 		}
 
 		if (target instanceof Script) {
-			target.values[idx] = value;
+			target.values[idx] = parseFloat(value);
 		}
 
 		target.values = [...target.values];
@@ -115,19 +115,22 @@ class App extends ContextBlocks {
 		if (id === null) {
 			slots[idx].target = null;
 		} else if (type === "script") {
-			let scripts = await storage.get("scripts", id);
-			let script = (scripts || [])[0] || null;
+			let script = await storage.getItem("scripts", id);
 
 			if (!script) {
 				return console.log("Couldn't find script");
 			}
 
-			slots[idx].target = this.state.scripts[idx];
-			slots[idx].target.values = [0, 0];
-			slots[idx].target.code = script.code;
-			slots[idx].target.label = script.label;
-			slots[idx].target.path = script.path;
-			slots[idx].target.id = script.id;
+			let target = this.state.scripts[idx];
+
+			target.values = [0, 0];
+			target.code = script.code;
+			target.label = script.label;
+			target.path = script.path;
+
+			slots[idx].target = target;
+
+			// slots[idx].target.id = script.id;
 		} else if (type === "effect") {
 			slots[idx].target = this.state.effects.find((e) => e.id === id) || null;
 			slots[idx].target.values = new Array(6).fill(null).map((v) => [0, 0]);
@@ -138,6 +141,9 @@ class App extends ContextBlocks {
 				old.values = new Array(6).fill(null).map((v) => [0, 0]);
 			} else {
 				old.values = [0, 0];
+				old.code = "";
+				old.label = `Script ${idx}`;
+				old.path = "";
 			}
 		}
 
@@ -210,6 +216,8 @@ class App extends ContextBlocks {
 				return JSON.parse(JSON.stringify(s));
 			}),
 			videos: this.state.videos.map((v) => {
+				console.log(v.handle);
+
 				return {
 					id: v.id,
 					handle: v.handle,
@@ -219,6 +227,7 @@ class App extends ContextBlocks {
 				};
 			}),
 			effects: this.state.effects.map((e) => {
+				console.log(e);
 				return JSON.parse(JSON.stringify(e));
 			}),
 			scripts: this.state.scripts.map((s) => {
@@ -245,11 +254,13 @@ class App extends ContextBlocks {
 		this.id = project.id;
 		this.name = project.name;
 
-		this.state.shapes = [];
-		project.shapes.map((shape, idx) => {
-			let s = app.state.addShape(shape.type);
+		this.state.shapes.map((shape) => {
+			this.state.removeShape(shape);
+		});
 
-			s.id = shape.id;
+		project.shapes.map((shape, idx) => {
+			let s = this.state.addShape(shape.type);
+
 			s.label = shape.label;
 			s.opacity = shape.opacity;
 			s.tris = shape.tris;
@@ -271,7 +282,7 @@ class App extends ContextBlocks {
 
 			v.id = video.id;
 			v.handle = null;
-			v.opacity = 0;
+			v.opacity = video.opacity;
 			v.code = video.code;
 
 			this.updateOpacity(idx, video.opacity);
@@ -288,16 +299,18 @@ class App extends ContextBlocks {
 			s.disabled = script.disabled;
 			s.values = script.values;
 			s.code = script.code;
-			code: script.code;
 		});
 
 		project.effects.map((effect, idx) => {
-			let e = this.state.effects[idx];
+			let e = this.state.effects.find((fx) => fx.id === effect.id);
 
-			e.id = effect.id;
-			e.label = effect.label;
-			e.values = effect.values;
-			e.code = effect.code;
+			if (!!e) {
+				// e.id = effect.id;
+				// e.path = effect.path;
+				// e.label = effect.label;
+				e.values = effect.values;
+				// e.code = effect.code;
+			}
 		});
 
 		project.slots.map((slot, idx) => {

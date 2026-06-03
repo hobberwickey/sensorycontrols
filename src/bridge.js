@@ -79,12 +79,14 @@ onconnect = function (e) {
           let { idx } = updates;
 
           if (state.files[idx] instanceof File) {
+            let loading_time = ((Date.now() - video_positions[idx]) / 1000) | 0;
+
             e.target.postMessage(
               JSON.stringify({
                 action: "sync_video",
                 updates: {
                   loading: idx,
-                  loading_time: video_positions[idx],
+                  loading_time: loading_time,
                 },
               }),
             );
@@ -125,6 +127,7 @@ onconnect = function (e) {
     } else {
       if (state.loading !== null) {
         state.files[state.loading] = e.data;
+        video_positions[state.loading] = Date.now();
       }
     }
 
