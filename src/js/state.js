@@ -359,12 +359,16 @@ export class State extends ContextBlocks {
 			// Special case for updating the slot target, since that
 			// should be a class instance
 			if (action === "update_slot" && x === "target") {
-				if (updates[x].type === "effect") {
-					target[x] = this.effects.find((e) => e.id === updates[x].id);
-				}
+				if (updates[x] === null) {
+					target[x] = null;
+				} else {
+					if (updates[x].type === "effect") {
+						target[x] = this.effects.find((e) => e.id === updates[x].id);
+					}
 
-				if (updates[x].type === "script") {
-					target[x] = this.scripts[data.idx];
+					if (updates[x].type === "script") {
+						target[x] = this.scripts[data.idx];
+					}
 				}
 			} else if (action === "update_media") {
 				target.files = this.files.toSpliced(data.idx, 1, updates.media);
