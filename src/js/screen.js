@@ -728,8 +728,8 @@ export default class Screen {
     this.videos[idx].onplay = () => {
       if (!!loading_time) {
         setTimeout(() => {
-          this.videos[idx].currentTime = loading_time;
-        }, 10);
+          this.videos[idx].currentTime = loading_time + 1;
+        }, 1000);
       }
     };
 
@@ -848,6 +848,8 @@ export default class Screen {
         fx: this.attrs.effects.find((fx) => fx.id === e.id),
       };
     });
+
+    console.log(this.effects.map((e) => e.fx.id));
 
     slots.map((slot, idx) => {
       if (slot?.type !== "script") {
