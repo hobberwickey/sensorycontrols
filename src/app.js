@@ -83,6 +83,10 @@ class App extends ContextBlocks {
 
 		let { target } = this.state.slots[slot];
 
+		if (!target) {
+			return;
+		}
+
 		if (target instanceof Effect) {
 			target.values[video][idx] = parseFloat(value);
 		}
