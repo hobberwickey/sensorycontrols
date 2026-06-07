@@ -118,16 +118,20 @@
         return;
       }
 
-      const [fileHandle] = await window.showOpenFilePicker();
-      const file = await fileHandle.getFile();
+      try {
+        const [fileHandle] = await window.showOpenFilePicker();
+        const file = await fileHandle.getFile();
 
-      this.querySelector("video").src = URL.createObjectURL(file);
+        this.querySelector("video").src = URL.createObjectURL(file);
 
-      this.querySelector("video").currentTime = 50;
-      this.querySelector(".preview").classList.remove("no-video");
-      // this.querySelector("input[type='file']").disabled = true;
+        this.querySelector("video").currentTime = 50;
+        this.querySelector(".preview").classList.remove("no-video");
+        // this.querySelector("input[type='file']").disabled = true;
 
-      app.loadVideo(this.idx, file, fileHandle);
+        app.loadVideo(this.idx, file, fileHandle);
+      } catch (e) {
+        console.log(e);
+      }
     }
 
     async showMedia() {
