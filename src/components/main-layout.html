@@ -106,22 +106,24 @@
       app.state.bind(this, "selected", (s) => {
         this.selected = s;
 
-        let { slot, video } = this.selected;
-        let { slots, effects, scripts } = app.state;
-        let target = slots[slot]?.target;
+        let target = this.getTarget();
+        let video = this.getVideo();
 
         if (!!target) {
           target.bindOnce(this, "values", (values) => {
-            if (!video) {
+            let t = this.getTarget();
+            let v = this.getVideo();
+
+            if (!t || !v) {
               return;
             }
 
-            if (target.type === "script") {
+            if (t.type === "script") {
               this.values = [...values];
             }
 
-            if (target.type === "effect") {
-              this.values = [...target.values[video]];
+            if (t.type === "effect") {
+              this.values = [...t.values[v]];
             }
           });
         }
@@ -142,6 +144,17 @@
       window.addEventListener("click", (e) => {
         this.closeMenu();
       });
+    }
+
+    getTarget() {
+      let { slot, video } = this.selected;
+      let { slots, effects, scripts } = app.state;
+
+      return slots[slot]?.target || null;
+    }
+
+    getVideo() {
+      return this.selected.video || null;
     }
 
     updateName(e) {
