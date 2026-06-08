@@ -9,35 +9,39 @@
       {{idx + 1}}
     </div>
     <div class="select-display">{{target?.label || "Unassigned"}}</div>
-    <!-- <div class="select-list">
-      <ul class="uk-list">
-        <li @click="updateSelection(null)">Empty</li>
-        <li @click="updateSelection('__script')">Script</li>
-        <template :for="options" :id="$value.id + '_' + $value.active">
-          <template :if="$value.active">
-            <li @click="updateSelection($value.id)">{{$value.label}}</li>
-          </template>
-        </template>
-      </ul>
-    </div> -->
     <div class="select-actions">
-      <div class="select-handle" @click="openEditScript($event)">
-        <app-icon
-          :icon="'code'"
-          aria-label="Live Code: Script"
-          uk-tooltip="Live Code: Script"
-        ></app-icon>
-      </div>
-      <div class="select-handle" @click="clearSlot()">
-        <app-icon
-          :icon="'trash'"
-          aria-label="Clear Slot"
-          uk-tooltip="Clear Slot"
-        ></app-icon>
-      </div>
-      <!-- <div class="select-handle" @click="toggleActive($event)">
-        <span data-uk-icon="icon: triangle-down"></span>
-      </div> -->
+      <template :if="!target || target?.type === 'script'">
+        <div class="select-handle" @click="openEditScript($event)">
+          <app-icon
+            :icon="'code'"
+            aria-label="Live Code: Script"
+            uk-tooltip="Live Code: Script"
+          ></app-icon>
+        </div>
+      </template>
+      <!-- 
+        Should do live editing of effects, but what exactly would that mean since 
+        there aren't 12 assigned slots life with Scripts. I could set up that paradigm, 
+        but there's a reason I didn't really
+      -->
+      <!-- <template :if="!target || target?.type === 'effect'">
+        <div class="select-handle" @click="openEditEffect($event)">
+          <app-icon
+            :icon="'loader'"
+            aria-label="Live Code: Effect"
+            uk-tooltip="Live Code: Effect"
+          ></app-icon>
+        </div>
+      </template> -->
+      <template :if="!!target">
+        <div class="select-handle" @click="clearSlot()">
+          <app-icon
+            :icon="'trash'"
+            aria-label="Clear Slot"
+            uk-tooltip="Clear Slot"
+          ></app-icon>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -60,8 +64,16 @@
       this.slot = app.state.slots[this.idx];
 
       this.slot.listen("target", (target) => {
+        if (this.idx === 0) {
+          console.log(target);
+        }
+
         this.target = target;
       });
+
+      if (this.idx === 0) {
+        console.log(this.target);
+      }
 
       app.state.bind(this, "effects", (effects) => {
         this.options = effects;

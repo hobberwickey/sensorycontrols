@@ -131,10 +131,9 @@ class App extends ContextBlocks {
 			target.code = script.code;
 			target.label = script.label;
 			target.path = script.path;
+			target.id = script.id;
 
 			slots[idx].target = target;
-
-			// slots[idx].target.id = script.id;
 		} else if (type === "effect") {
 			slots[idx].target = this.state.effects.find((e) => e.id === id) || null;
 			slots[idx].target.values = new Array(6).fill(null).map((v) => [0, 0]);
@@ -159,7 +158,12 @@ class App extends ContextBlocks {
 		let target = slot.target;
 
 		if (!target) {
-			return;
+			if (updates.hasOwnProperty("code") && updates.hasOwnProperty("label")) {
+				target = this.state.scripts[idx];
+				this.state.slots[idx].target = target;
+			} else {
+				return;
+			}
 		}
 
 		for (let x in updates) {

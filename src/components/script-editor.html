@@ -113,6 +113,8 @@
       const beautify = ace.require("ace/ext/beautify"); // get reference to extension
       beautify.beautify(this.editor.session);
 
+      this.editor.focus();
+
       storage.bind(this, "scripts", (scripts) => {
         this.scripts = scripts;
       });
@@ -152,6 +154,8 @@
     }
 
     async onSave(e) {
+      console.log(this.dirty, this.label, this.id);
+
       if (!this.dirty) {
         return;
       }

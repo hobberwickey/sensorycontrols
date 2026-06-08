@@ -849,7 +849,7 @@ export default class Screen {
       };
     });
 
-    console.log(this.effects.map((e) => e.fx.id));
+    // console.log(this.effects.map((e) => e.fx.id));
 
     slots.map((slot, idx) => {
       if (slot?.type !== "script") {
@@ -921,7 +921,7 @@ export default class Screen {
           }
         });
 
-        console.log("Old Program:", oldProgram, "New Program:", program);
+        // console.log("Old Program:", oldProgram, "New Program:", program);
 
         this.gl.deleteProgram(oldProgram);
       } else {
