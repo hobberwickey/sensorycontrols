@@ -36,8 +36,13 @@ class App extends ContextBlocks {
 	}
 
 	loadVideo(idx, file, fileHandle) {
+		const imageTypes = ["image/jpeg"];
+
 		this.state.loading = idx;
 		this.state.files = this.state.files.toSpliced(idx, 1, file);
+		this.state.videos[idx].type = imageTypes.includes(file.type)
+			? "image"
+			: "video";
 		this.state.videos[idx].handle = fileHandle;
 		this.state.videos[idx].loaded = true;
 	}
@@ -224,10 +229,9 @@ class App extends ContextBlocks {
 				return JSON.parse(JSON.stringify(s));
 			}),
 			videos: this.state.videos.map((v) => {
-				console.log(v.handle);
-
 				return {
 					id: v.id,
+					type: v.type || "video",
 					handle: v.handle,
 					label: v.label,
 					opacity: v.opacity,
@@ -235,7 +239,6 @@ class App extends ContextBlocks {
 				};
 			}),
 			effects: this.state.effects.map((e) => {
-				console.log(e);
 				return JSON.parse(JSON.stringify(e));
 			}),
 			scripts: this.state.scripts.map((s) => {
@@ -289,6 +292,7 @@ class App extends ContextBlocks {
 			}
 
 			v.id = video.id;
+			v.type = video.type || video;
 			v.handle = null;
 			v.opacity = video.opacity;
 			v.code = video.code;

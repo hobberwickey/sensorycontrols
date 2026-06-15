@@ -256,6 +256,10 @@ export class State extends ContextBlocks {
 			this.post("update_video", { label }, { idx });
 		});
 
+		video.listen("type", (type) => {
+			this.post("update_video", { type }, { idx });
+		});
+
 		video.listen("opacity", (opacity) => {
 			this.post("update_video", { opacity }, { idx });
 		});
@@ -498,6 +502,7 @@ export class State extends ContextBlocks {
 		this.videos = videos.map((v, idx) => {
 			let video = this.videos[idx];
 
+			video.type = v.type;
 			video.label = v.label;
 			video.opacity = v.opacity;
 			video.code = v.code;

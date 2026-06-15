@@ -2,6 +2,8 @@ import { Effects } from "./effects.js";
 import { UI } from "./screen-ui.js";
 import { ScriptTemplate } from "./script-template.js";
 
+import { ImageTypes } from "./consts.js";
+
 import { Effect } from "./effect.js";
 import { Script } from "./script.js";
 
@@ -259,7 +261,7 @@ export default class Screen {
       let texture = this.textures[j];
 
       // Skip if video isn't playing
-      if (videoEl === null || videoEl.currentTime === 0) {
+      if (!video || (video.currentTime === 0 && !videoEl.still)) {
         continue;
       }
       this.updateTexture(gl, texture, videoEl);
@@ -273,13 +275,18 @@ export default class Screen {
       let texture = this.textures[j];
 
       // Skip if video isn't playing
-      if (videoEl === null || videoEl.currentTime === 0) {
+      if (!video || (video.currentTime === 0 && !videoEl.still)) {
         continue;
       }
 
       gl.bindTexture(gl.TEXTURE_2D, texture.src);
       gl.bindFramebuffer(gl.FRAMEBUFFER, texture.attrs.buffers[0]);
-      gl.viewport(0, 0, videoEl.videoWidth, videoEl.videoHeight);
+      gl.viewport(
+        0,
+        0,
+        video.still?.width || videoEl.videoWidth,
+        video.still?.height || videoEl.videoHeight,
+      );
       gl.useProgram(attrs.main.program);
 
       this.drawShapes(
@@ -329,7 +336,7 @@ export default class Screen {
         }
 
         // Skip if video isn't playing
-        if (videoEl === null || videoEl.currentTime === 0) {
+        if (!video || (video.currentTime === 0 && !videoEl.still)) {
           continue;
         }
 
@@ -339,7 +346,12 @@ export default class Screen {
         gl.bindTexture(gl.TEXTURE_2D, texture.attrs.textures[activeBuffer]);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, texture.attrs.buffers[drawBuffer]);
-        gl.viewport(0, 0, videoEl.videoWidth, videoEl.videoHeight);
+        gl.viewport(
+          0,
+          0,
+          videoEl.still?.width || videoEl.videoWidth,
+          videoEl.still?.height || videoEl.videoHeight,
+        );
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         this.drawShapes(
@@ -365,7 +377,7 @@ export default class Screen {
       let texture = this.textures[j];
 
       // Skip if video isn't playing
-      if (videoEl === null || videoEl.currentTime === 0) {
+      if (!video || (video.currentTime === 0 && !video.still)) {
         continue;
       }
 
@@ -403,8 +415,8 @@ export default class Screen {
     gl.uniform1f(attrs.uniforms.flip, flip);
     gl.uniform1f(attrs.uniforms.elapsed, elapsed / 1000);
     gl.uniform2fv(attrs.uniforms.dimensions, [
-      1 / video.videoWidth,
-      1 / video.videoHeight,
+      1 / (video.still?.width || video.videoWidth),
+      1 / (video.still?.height || video.videoWidth),
     ]);
 
     for (var i = 0; i < shapes.length; i++) {
@@ -660,7 +672,7 @@ export default class Screen {
   }
 
   updateTexture(gl, texture, video) {
-    if (!video || video.currentTime === 0) {
+    if (!video || (video.currentTime === 0 && !video.still)) {
       return;
     }
 
@@ -670,6 +682,7 @@ export default class Screen {
     const srcType = gl.UNSIGNED_BYTE;
 
     const { attrs } = texture;
+
     if (attrs.textures.length < 2 && attrs.buffers.length < 2) {
       for (let i = 0; i < 2; i++) {
         const bufferTexture = gl.createTexture();
@@ -680,7 +693,7 @@ export default class Screen {
           internalFormat,
           srcFormat,
           srcType,
-          video,
+          video.still || video,
         );
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -701,7 +714,7 @@ export default class Screen {
       internalFormat,
       srcFormat,
       srcType,
-      video,
+      video.still || video,
     );
 
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -733,7 +746,23 @@ export default class Screen {
       }
     };
 
-    this.videos[idx].src = URL.createObjectURL(file);
+    if (ImageTypes.includes(file.type)) {
+      let img = new Image();
+      img.onload = () => {
+        let gl = this.gl;
+        let texture = this.textures[idx];
+
+        this.videos[idx].still = img;
+        // this.updateTexture(gl, texture, img);
+      };
+      let fr = new FileReader();
+      fr.onload = function () {
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    } else {
+      this.videos[idx].src = URL.createObjectURL(file);
+    }
   }
 
   removeVideo(idx) {
@@ -743,6 +772,8 @@ export default class Screen {
     this.textures[idx] = this.initTexture(this.gl);
 
     if (!!video) {
+      delete video.still;
+
       if (!video.stream) {
         video.pause();
         video.removeAttribute("src");
@@ -755,6 +786,7 @@ export default class Screen {
           }
         });
 
+        video.poster = null;
         video.src = null;
         video.srcObject = null;
         video.load();

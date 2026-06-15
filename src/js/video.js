@@ -12,6 +12,7 @@ export class Video extends ContextBlocks {
 	constructor(idx, defaults) {
 		super({
 			id: gen_id(),
+			type: defaults?.type || "video",
 			handle: null,
 			loaded: false,
 			label: defaults?.label || `Video ${idx + 1}`,
