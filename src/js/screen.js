@@ -284,8 +284,8 @@ export default class Screen {
       gl.viewport(
         0,
         0,
-        video.still?.width || videoEl.videoWidth,
-        video.still?.height || videoEl.videoHeight,
+        videoEl.still?.width || videoEl.videoWidth,
+        videoEl.still?.height || videoEl.videoHeight,
       );
       gl.useProgram(attrs.main.program);
 
@@ -344,7 +344,6 @@ export default class Screen {
         let drawBuffer = (activeBuffer + 1) % 2;
 
         gl.bindTexture(gl.TEXTURE_2D, texture.attrs.textures[activeBuffer]);
-
         gl.bindFramebuffer(gl.FRAMEBUFFER, texture.attrs.buffers[drawBuffer]);
         gl.viewport(
           0,
