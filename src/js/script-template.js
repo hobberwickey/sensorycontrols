@@ -13,11 +13,11 @@ export const ScriptTemplate = function (script) {
 
 		const lfo = function(min, max, interval) {
 			let ms = interval * 1000;
-			let previous = lfos[lfos_count] || 1;
-			let delta = Math.abs(((state.elapsed % ms) / ms) - ((registry.elapsed % ms) / ms));
+			let previous = lfos[lfos_count] ?? 1;
+			let delta = (state.elapsed - registry.elapsed) / ms; // Math.abs(((state.elapsed % ms) / ms) - ((registry.elapsed % ms) / ms));
 			let perc = (previous + delta) % 1;
 
-			lfos[lfos_count] = perc || 0;
+			lfos[lfos_count] = perc ?? 0;
 			lfos_count++;
 
 			return {
