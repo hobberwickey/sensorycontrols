@@ -530,6 +530,7 @@ export class State extends ContextBlocks {
 		this.scripts = scripts.map((s, idx) => {
 			let script = this.scripts[idx];
 
+			script.id = s.id;
 			script.type = s.type;
 			script.label = s.label;
 			script.disabled = s.disabled;

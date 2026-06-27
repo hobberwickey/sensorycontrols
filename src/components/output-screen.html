@@ -146,7 +146,7 @@
       });
 
       this.state.scripts.map((s) => {
-        s.listen("code", () => {
+        s.listen("code", (code) => {
           if (!this.screen) {
             return;
           }
