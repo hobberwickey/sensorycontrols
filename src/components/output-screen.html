@@ -1,12 +1,12 @@
 <template>
   <div>
     <section class="videos">
-      <video playsinline loop muted></video>
-      <video playsinline loop muted></video>
-      <video playsinline loop muted></video>
-      <video playsinline loop muted></video>
-      <video playsinline loop muted></video>
-      <video playsinline loop muted></video>
+      <video playsinline autoplay muted></video>
+      <video playsinline autoplay muted></video>
+      <video playsinline autoplay muted></video>
+      <video playsinline autoplay muted></video>
+      <video playsinline autoplay muted></video>
+      <video playsinline autoplay muted></video>
     </section>
     <section class="screen">
       <canvas :width="width" :height="height"></canvas>
@@ -20,6 +20,8 @@
 <script>
   import Screen from "../js/screen.js";
   import { State } from "../js/state.js";
+
+  import { storage } from "../js/storage.js";
 
   class OutputScreen extends BuildingBlocks {
     constructor() {
@@ -63,12 +65,28 @@
       this.ctx = this.querySelector(".screen canvas").getContext("webgl");
       this.ui = this.querySelector(".ui canvas").getContext("2d");
 
+      this.videos.map((v, i) => {
+        v.addEventListener("ended", async () => {
+          let vid = this.state.videos[i];
+          if (vid.repeat) {
+            return;
+          }
+
+          let idx = Math.max(vid.playlist.indexOf(vid.current), 0);
+          let next = (idx + 1) % vid.playlist.length;
+
+          // vid.position = 0;
+          vid.current = vid.playlist[next];
+        });
+      });
+
       this.screen = new Screen(this.state, this.ctx, this.videos, {
         width: this.width,
         height: this.height,
       });
       this.screen.play();
 
+      // TODO: Fix for Firefox
       this.state.listen("files", (files, oldFiles) => {
         if (!this.screen) {
           return;
@@ -134,6 +152,52 @@
         });
       });
       /****** End Handling Effect Code Updates ******/
+
+      this.state.videos.map((v, idx) => {
+        v.listen("repeat", (repeat) => {
+          if (repeat) {
+            this.videos[idx].setAttribute("loop", true);
+          } else {
+            this.videos[idx].removeAttribute("loop");
+          }
+        });
+
+        v.listen("current", async (current) => {
+          if (!current) {
+            this.screen.removeVideo(idx);
+            return;
+          }
+
+          if (v.type === "media") {
+            this.screen.setMedia(idx, v.current);
+            return;
+          }
+
+          let video = await storage.getItem("files", current);
+          if (!!video) {
+            if (video.handle !== null) {
+              let file = null;
+
+              if ((await video.handle.queryPermission()) === "granted") {
+                file = await video.handle.getFile();
+              }
+
+              if ((await video.handle.requestPermission()) === "granted") {
+                file = await video.handle.getFile();
+              }
+
+              if (!!file) {
+                // let pos = this.state.videos[idx].position;
+                // console.log("Updating Position:", pos);
+
+                this.screen.removeVideo(idx);
+                // this.screen.loadVideo(idx, file, pos || 0);
+                this.screen.loadVideo(idx, file);
+              }
+            }
+          }
+        });
+      });
 
       this.state.slots.map((s) => {
         s.listen("target", () => {
@@ -227,8 +291,10 @@
         return;
       }
 
-      // this.screen.stop();
-      // this.screen = null;
+      this.videos.map((video, idx) => {
+        this.state.videos[idx].position = video.currentTime || 0;
+      });
+
       this.window = window.open("./screen.html");
 
       let poll = () => {

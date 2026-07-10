@@ -260,8 +260,24 @@ export class State extends ContextBlocks {
 			this.post("update_video", { type }, { idx });
 		});
 
+		video.listen("repeat", (repeat) => {
+			this.post("update_video", { repeat }, { idx });
+		});
+
+		video.listen("current", (current) => {
+			this.post("update_video", { current }, { idx });
+		});
+
 		video.listen("opacity", (opacity) => {
 			this.post("update_video", { opacity }, { idx });
+		});
+
+		video.listen("position", (position) => {
+			this.post("update_video", { position }, { idx });
+		});
+
+		video.listen("playlist", (playlist) => {
+			this.post("update_video", { playlist }, { idx });
 		});
 	}
 
@@ -502,10 +518,16 @@ export class State extends ContextBlocks {
 		this.videos = videos.map((v, idx) => {
 			let video = this.videos[idx];
 
+			console.log("state syncs");
+
 			video.type = v.type;
+			video.repeat = v.repeat;
 			video.label = v.label;
 			video.opacity = v.opacity;
 			video.code = v.code;
+			video.current = v.current;
+			video.position = v.position;
+			video.playlist = v.playlist;
 
 			return video;
 		});

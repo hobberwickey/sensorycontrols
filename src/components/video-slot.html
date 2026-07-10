@@ -29,8 +29,8 @@
             data-uk-icon="icon: trash"
             aria-label="Clear Video"
             uk-tooltip="Clear Video"
-          ></a
-          ><a
+          ></a>
+          <a
             @click="onClear()"
             class="clear-video"
             href="javascript:void(0)"
@@ -38,18 +38,61 @@
             aria-label="Clear Effects"
             uk-tooltip="Clear Effects"
           ></a>
+          <app-icon
+            @click="togglePlaylist()"
+            :class="'edit-playlist ' + (showplaylist ? 'active' : '')"
+            :icon="'menu-hamburger'"
+            aria-label="Edit Playlist"
+            uk-tooltip="Edit Playlist"
+            clickable
+          ></app-icon>
         </div>
       </div>
       <div class="video-body">
-        <div :class="'preview upload-wrapper' + (!loaded ? ' no-video' : '')">
+        <div
+          :class="'preview upload-wrapper' + (!current ? ' no-video' : '') + (showplaylist ? ' hidden' : '')"
+        >
           <video></video>
           <div>{{stream?.label || ""}}</div>
           <p>No Video</p>
           <label
             class="uk-label"
             :for="'video-' + video.id + '-input'"
-            @click="getFile()"
+            @click="!current && getFile(loadFile)"
           ></label>
+        </div>
+        <div :class="'playlist'  + (!showplaylist ? ' hidden' : '')">
+          <div class="playlist-header">
+            <app-icon
+              :icon="'plus-circle'"
+              aria-label="Add Video"
+              uk-tooltip="Add Video"
+              @click="getFile(addFile)"
+            ></app-icon>
+            <app-icon
+              :icon="'reset-forward'"
+              :class='!!repeat ? "active" : ""'
+              aria-label="Toggle Repeat"
+              uk-tooltip="Toggle Repeat"
+              @click="toggleRepeat()"
+            ></app-icon>
+          </div>
+          <div class="playlist-items" @drop="handleDrop($event)">
+            <template :for="temp || playlist" :id="$value">
+              <div
+                :class="'playlist-item' + (current === $value ? ' active' : '')"
+                @dragStart="handleReorder($value, $idx, $event)"
+                @dragOver="handleOver($value, $idx, $event)"
+                draggable="true"
+              >
+                <div class="playlist-item-name" @click="load($value)">
+                  {{$value}}
+                </div>
+                <app-icon :icon="'move'"></app-icon>
+                <app-icon :icon="'trash'" @click="removeFile($idx)"></app-icon>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -68,6 +111,7 @@
   // TODO: File fallback for Firefox
 
   import app from "../app.js";
+  import { storage } from "../js/storage.js";
   import { ImageTypes } from "../js/consts";
 
   class VideoSlot extends BuildingBlocks {
@@ -76,23 +120,124 @@
     }
 
     static get observedProperties() {
-      return ["video", "loaded", "idx", "opacity", "stream"];
+      return [
+        "video",
+        "idx",
+        "opacity",
+        "stream",
+        "playlist",
+        "temp",
+        "repeat",
+        "current",
+        "showplaylist",
+      ];
     }
 
     connected() {
+      this.temp = null;
+      this.moving = null;
+
       this.opacity = this.video.opacity;
+      this.showplaylist = false;
 
       this.video.bind(this, "opacity", (o) => {
         this.opacity = o;
       });
 
-      this.video.bind(this, "loaded", (l) => {
-        if (!this.loaded && l) {
-          this.setPreview();
-        }
-
-        this.loaded = l;
+      this.video.bind(this, "playlist", (p) => {
+        this.playlist = p;
       });
+
+      this.video.bind(this, "current", (c) => {
+        this.current = c;
+        this.preview();
+      });
+
+      this.video.bind(this, "repeat", (r) => {
+        this.repeat = r;
+      });
+
+      // this.video.bind(this, "loaded", (l) => {
+      //   if (!this.loaded && l) {
+      //     this.setPreview();
+      //   }
+
+      //   this.loaded = l;
+      // });
+    }
+
+    handleOver(filename, idx, e) {
+      e.preventDefault();
+
+      let list = [...this.querySelectorAll(".playlist .playlist-item")];
+      let targetIdx = list.indexOf(e.currentTarget);
+      let currentIdx = this.temp.indexOf(this.moving);
+      let target = null;
+      let coords = e.currentTarget.getBoundingClientRect();
+
+      if (e.pageX < coords.left || e.pageX > coords.left + coords.width) {
+        return;
+      }
+
+      if (e.pageY <= coords.top + coords.height / 2) {
+        target = targetIdx;
+      }
+
+      if (e.pageY > coords.top + coords.height / 2) {
+        target = Math.min(targetIdx + 1, this.temp.length - 1);
+      }
+
+      let spliced = this.temp.toSpliced(currentIdx, 1);
+      let injected = spliced.toSpliced(targetIdx, 0, this.moving);
+
+      if (JSON.stringify(injected) !== JSON.stringify(this.temp)) {
+        this.temp = [...injected];
+        console.log(this.temp);
+      }
+    }
+
+    handleEnter(e) {
+      console.log(e.target, e.currentTarget, e.relatedTarget);
+
+      if (!!e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
+        return;
+      }
+
+      //this.classList.add("dragover");
+    }
+
+    handleLeave(e) {
+      if (!!e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
+        console.log("OOB");
+        return;
+      }
+
+      //this.classList.remove("dragover");
+    }
+
+    handleEnd(e) {
+      this.temp = null;
+      this.moving = null;
+    }
+
+    handleDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      let data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+      this.video.playlist = [...this.temp];
+    }
+
+    handleReorder(filename, idx, e) {
+      this.temp = [...this.playlist];
+      this.moving = filename;
+
+      e.dataTransfer.clearData();
+      e.dataTransfer.setData(
+        "text/plain",
+        JSON.stringify({ id: filename, index: idx }),
+      );
     }
 
     setPreview() {
@@ -104,13 +249,46 @@
           this.querySelector("video").poster = "";
           this.querySelector("video").src = URL.createObjectURL(file);
           this.querySelector("video").currentTime = 50;
-          this.querySelector(".preview").classList.remove("no-video");
+        }
+      }
+    }
+
+    async preview() {
+      if (!this.current) {
+        this.querySelector("video").src = "";
+        this.querySelector("video").poster = "";
+
+        return;
+      }
+
+      let video = await storage.getItem("files", this.current);
+      if (!!video) {
+        if (video.handle !== null) {
+          let file = null;
+
+          if ((await video.handle.queryPermission()) === "granted") {
+            file = await video.handle.getFile();
+          }
+
+          if ((await video.handle.requestPermission()) === "granted") {
+            file = await video.handle.getFile();
+          }
+
+          console.log(this);
+          if (file instanceof File) {
+            if (ImageTypes.includes(file.type)) {
+              this.querySelector("video").poster = URL.createObjectURL(file);
+            } else {
+              this.querySelector("video").poster = "";
+              this.querySelector("video").src = URL.createObjectURL(file);
+              this.querySelector("video").currentTime = 50;
+            }
+          }
         }
       }
     }
 
     onRemove() {
-      this.loaded = false;
       this.stream = null;
 
       this.querySelector("video").src = "";
@@ -120,24 +298,63 @@
       app.removeVideo(this.idx);
     }
 
-    async getFile() {
-      if (this.loaded) {
-        return;
-      }
-
+    async getFile(callback) {
       try {
         const [fileHandle] = await window.showOpenFilePicker();
         const file = await fileHandle.getFile();
 
-        this.querySelector("video").src = URL.createObjectURL(file);
-
-        this.querySelector("video").currentTime = 50;
-        this.querySelector(".preview").classList.remove("no-video");
         // this.querySelector("input[type='file']").disabled = true;
+        await app.storeVideo(file, fileHandle);
 
-        app.loadVideo(this.idx, file, fileHandle);
+        callback(file, fileHandle);
       } catch (e) {
         console.log(e);
+      }
+    }
+
+    load(filename) {
+      this.video.current = filename;
+    }
+
+    async loadFile(file, fileHandle) {
+      this.querySelector("video").src = URL.createObjectURL(file);
+      this.querySelector("video").currentTime = 50;
+
+      if (ImageTypes.includes(file.type)) {
+        this.video.type = "image";
+      } else {
+        this.video.type = "video";
+      }
+
+      this.video.playlist = [file.name];
+      this.video.current = file.name;
+    }
+
+    async addFile(file, fileHandle) {
+      this.video.playlist = [...this.video.playlist, file.name];
+
+      if (this.video.playlist.length === 1) {
+        if (ImageTypes.includes(file.type)) {
+          this.video.type = "image";
+        } else {
+          this.video.type = "video";
+        }
+
+        this.video.current = file.name;
+      }
+    }
+
+    async removeFile(idx) {
+      let { playlist, current } = this.video;
+      let currentIdx = playlist.indexOf(current);
+
+      if (currentIdx === idx) {
+        let prev = Math.max(0, currentIdx - 1);
+
+        this.video.playlist = playlist.toSpliced(currentIdx, 1);
+        this.video.current = this.video.playlist[prev] || null;
+      } else {
+        this.video.playlist = playlist.toSpliced(idx, 1);
       }
     }
 
@@ -195,6 +412,18 @@
 
       this.opacity = e.target.value;
     }
+
+    togglePlaylist() {
+      this.showplaylist = !this.showplaylist;
+    }
+
+    toggleRepeat() {
+      this.video.repeat = !this.video.repeat;
+    }
+
+    editPlaylist() {}
+
+    closePlaylist() {}
 
     openEditShader() {}
 

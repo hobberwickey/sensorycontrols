@@ -1,6 +1,6 @@
 import { ContextBlocks } from "building-blocks";
 
-const keys = ["scripts", "effects", "shaders", "projects"];
+const keys = ["scripts", "effects", "shaders", "projects", "files"];
 
 class StorageManager extends ContextBlocks {
 	constructor() {
@@ -9,8 +9,10 @@ class StorageManager extends ContextBlocks {
 			effects: [],
 			shaders: [],
 			projects: [],
+			files: [],
 		});
 
+		this.version = 8;
 		this.store = null;
 		this.queue = [];
 
@@ -18,7 +20,7 @@ class StorageManager extends ContextBlocks {
 			return;
 		}
 
-		const request = window.indexedDB.open("SensoryControls", 3);
+		const request = window.indexedDB.open("SensoryControls", this.version);
 		request.onerror = (event) => {
 			console.warn("Error opening IndexDB", event);
 		};
@@ -30,10 +32,12 @@ class StorageManager extends ContextBlocks {
 		request.onupgradeneeded = (event) => {
 			this.store = event.target.result;
 
-			let keys = ["scripts", "effects", "shaders", "projects"];
-
 			keys.map((key) => {
-				let objectStore = this.store.createObjectStore(key, { keyPath: "id" });
+				if (!this.store.objectStoreNames.contains(key)) {
+					let objectStore = this.store.createObjectStore(key, {
+						keyPath: "id",
+					});
+				}
 			});
 
 			this.init();
@@ -45,6 +49,9 @@ class StorageManager extends ContextBlocks {
 		this.effects = await this.get("effects");
 		this.shaders = await this.get("shaders");
 		this.projects = await this.get("projects");
+		this.files = await this.get("files");
+
+		console.log(this.files);
 
 		this.resolveQueue();
 	}
@@ -86,6 +93,7 @@ class StorageManager extends ContextBlocks {
 	}
 
 	async getItem(key, id) {
+		console.log(key, id);
 		const request = this.store
 			.transaction([key], "readwrite")
 			.objectStore(key)

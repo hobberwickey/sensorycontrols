@@ -114,7 +114,8 @@ video-slot {
       }
     }
 
-    a {
+    a,
+    app-icon {
       display: inline-block;
       vertical-align: middle;
       width: 20px;
@@ -130,6 +131,53 @@ video-slot {
 
   .video-body {
     padding-top: 0px;
+
+    .playlist {
+      width: 100%;
+      aspect-ratio: 2/1;
+      background-color: black;
+      color: white;
+      overflow: auto;
+
+      .playlist-header {
+        text-align: right;
+        padding: 2px 5px 4px 5px;
+        cursor: pointer;
+        border-bottom: solid 1px;
+
+        app-icon,
+        span {
+          display: inline-block;
+          vertical-align: middle;
+        }
+      }
+
+      .playlist-item {
+        display: flex;
+        padding: 2px 5px;
+        font-size: 12px;
+
+        &.active {
+          background-color: var(--active-color);
+        }
+
+        .playlist-item-name {
+          flex: 1;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          width: 0;
+          overflow: hidden;
+        }
+
+        app-icon {
+          margin-left: 5px;
+        }
+      }
+
+      &.hidden {
+        display: none;
+      }
+    }
   }
 
   video {
@@ -174,6 +222,10 @@ video-slot {
       div {
         display: none;
       }
+    }
+
+    &.hidden {
+      display: none;
     }
   }
 }

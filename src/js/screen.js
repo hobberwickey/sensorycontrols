@@ -1,5 +1,4 @@
 import { Effects } from "./effects.js";
-import { UI } from "./screen-ui.js";
 import { ScriptTemplate } from "./script-template.js";
 
 import { ImageTypes } from "./consts.js";
@@ -738,11 +737,13 @@ export default class Screen {
 
   loadVideo(idx, file, loading_time = 0) {
     this.videos[idx].onplay = () => {
-      if (!!loading_time) {
-        setTimeout(() => {
-          this.videos[idx].currentTime = loading_time + 1;
-        }, 1000);
-      }
+      this.videos[idx].currentTime = loading_time;
+
+      // if (!!loading_time) {
+      //   setTimeout(() => {
+      //     this.videos[idx].currentTime = loading_time + 1;
+      //   }, 100);
+      // }
     };
 
     if (ImageTypes.includes(file.type)) {

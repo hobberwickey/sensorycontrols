@@ -35,29 +35,44 @@ class App extends ContextBlocks {
 		this.state.selected = { ...this.state.selected, [type]: idx };
 	}
 
-	loadVideo(idx, file, fileHandle) {
-		const imageTypes = ["image/jpeg"];
+	// Deprecated
 
-		this.state.loading = idx;
-		this.state.files = this.state.files.toSpliced(idx, 1, file);
-		this.state.videos[idx].type = imageTypes.includes(file.type)
-			? "image"
-			: "video";
-		this.state.videos[idx].handle = fileHandle;
-		this.state.videos[idx].loaded = true;
+	// loadVideo(idx, file, fileHandle) {
+	// 	const imageTypes = ["image/jpeg"];
+
+	// 	this.state.loading = idx;
+	// 	this.state.files = this.state.files.toSpliced(idx, 1, file);
+	// 	this.state.videos[idx].type = imageTypes.includes(file.type)
+	// 		? "image"
+	// 		: "video";
+	// 	this.state.videos[idx].handle = fileHandle;
+	// 	this.state.videos[idx].loaded = true;
+	// }
+
+	async storeVideo(file, fileHandle) {
+		return storage.upsertItem("files", {
+			id: file.name,
+			handle: fileHandle,
+		});
 	}
 
 	updateVideoMedia(idx, source) {
-		this.state.files = this.state.files.toSpliced(idx, 1, source);
-		this.state.videos[idx].loaded = true;
+		this.state.videos[idx].type = "media";
+		this.state.videos[idx].current = source.deviceId;
+
+		// this.state.files = this.state.files.toSpliced(idx, 1, source);
+		// this.state.videos[idx].loaded = true;
 	}
 
 	removeVideo(idx) {
-		this.state.loading = idx;
-		this.state.files[idx] = null;
-		this.state.files = [...this.state.files];
+		// this.state.loading = idx;
+		// this.state.files[idx] = null;
+		// this.state.files = [...this.state.files];
 
-		this.state.videos[idx].loaded = false;
+		// this.state.videos[idx].loaded = false;
+
+		this.state.videos[idx].playlist = [];
+		this.state.videos[idx].current = null;
 	}
 
 	updateOpacity(idx, value) {
@@ -232,9 +247,11 @@ class App extends ContextBlocks {
 				return {
 					id: v.id,
 					type: v.type || "video",
-					handle: v.handle,
+					repeat: v.repeat,
+					current: v.current,
 					label: v.label,
 					opacity: v.opacity,
+					playlist: v.playlist,
 					code: v.code,
 				};
 			}),
@@ -281,26 +298,17 @@ class App extends ContextBlocks {
 			let v = this.state.videos[idx];
 			let file = null;
 
-			if (video.handle !== null) {
-				if ((await video.handle.queryPermission()) === "granted") {
-					file = await video.handle.getFile();
-				}
-
-				if ((await video.handle.requestPermission()) === "granted") {
-					file = await video.handle.getFile();
-				}
-			}
-
 			v.id = video.id;
-			v.type = video.type || video;
-			v.handle = null;
+			v.type = video.type || "video";
+			v.repeat = video.repeat || true;
 			v.opacity = video.opacity;
+			v.position = 0;
+			v.playlist = video.playlist || [];
 			v.code = video.code;
 
+			v.current = video.current || null;
+
 			this.updateOpacity(idx, video.opacity);
-			if (file !== null) {
-				this.loadVideo(idx, file, video.handle);
-			}
 		});
 
 		project.scripts.map((script, idx) => {

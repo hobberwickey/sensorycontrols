@@ -13,11 +13,14 @@ export class Video extends ContextBlocks {
 		super({
 			id: gen_id(),
 			type: defaults?.type || "video",
-			handle: null,
-			loaded: false,
+			handle: null, // Depricated, all file handles will be stored so just use the playlist
+			repeat: true,
 			label: defaults?.label || `Video ${idx + 1}`,
 			opacity: defaults?.opacity || 0,
 			code: defaults?.code || ``,
+			current: null,
+			position: 0,
+			playlist: [],
 		});
 	}
 }
