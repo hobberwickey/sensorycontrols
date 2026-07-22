@@ -164,6 +164,7 @@
 
         v.listen("current", async (current) => {
           if (!current) {
+            this.videos[idx].playbackRate = 1;
             this.screen.removeVideo(idx);
             return;
           }
