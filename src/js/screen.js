@@ -161,10 +161,29 @@ export default class Screen {
 
     this.videos.forEach((vid) => {
       vid.addEventListener("loadedmetadata", (e) => {
-        setTimeout(() => {
-          this.updateContext(e.target);
-          vid.play();
-        }, 100);
+        let v = e.target;
+
+        let play = function () {
+          let isPlaying =
+            v.currentTime > 0 &&
+            !v.paused &&
+            !v.ended &&
+            v.readyState > v.HAVE_CURRENT_DATA;
+
+          if (!isPlaying) {
+            this.updateContext(v);
+            v.play();
+          } else {
+            setTimeout(() => {
+              play();
+            }, 10);
+          }
+        };
+
+        // setTimeout(() => {
+        //   this.updateContext(e.target);
+        //   vid.play();
+        // }, 100);
       });
     });
 
@@ -211,6 +230,10 @@ export default class Screen {
     let state = JSON.parse(JSON.stringify(this.state));
     let beat = this.beatTick ? this.beat : null;
 
+    let api = {
+      setVideo: this.setVideo.bind(this),
+    };
+
     state.elapsed = Date.now() - this.epoch;
     state.bpm = this.bpm;
     state.beat = beat;
@@ -225,7 +248,7 @@ export default class Screen {
 
       if (!disabled) {
         try {
-          fn(state, values[0], values[1], target.id, this.registry);
+          fn(state, values[0], values[1], target.id, this.registry, api);
         } catch (e) {
           console.log(e);
         }
@@ -735,6 +758,25 @@ export default class Screen {
     return frameBuffer;
   }
 
+  // TODO: This violates that screen not pushing back
+  // up to the actual state, but I don't really know
+  // that there's any other way of doing this.
+  setVideo(videoIdx, playlistIdx) {
+    let { playlist, current } = this.state.videos[videoIdx];
+
+    if (playlist.length === 0 || current === null) {
+      return;
+    }
+
+    let currentIdx = playlist.indexOf(current);
+    let targetIdx = Math.max(Math.min(playlistIdx, playlist.length - 1), 0);
+
+    if (targetIdx !== currentIdx) {
+      this.state.videos[videoIdx].current =
+        this.state.videos[videoIdx].playlist[targetIdx];
+    }
+  }
+
   loadVideo(idx, file, loading_time = 0) {
     this.videos[idx].onplay = () => {
       this.videos[idx].currentTime = loading_time;
@@ -850,6 +892,7 @@ export default class Screen {
           "effect_y",
           "script_id",
           "registry",
+          "api",
           ScriptTemplate(code),
         );
 

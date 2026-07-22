@@ -242,6 +242,67 @@ export const ScriptTemplate = function (script) {
 			}
 		}
 
+		// Playlist control
+		const previousVideo = function(videos) {
+			if (!Array.isArray(videos)) {
+				videos = [videos];
+			}
+
+			for (var i=0; i<videos.length; i++) {
+				let video = state.videos[videos[i]]
+				let current = video.current;
+				let playlist = video.playlist;
+
+				if (current === null) {
+					continue;
+				}
+
+				if (playlist.length === 0) {
+					continue;
+				}
+
+				let currentIndex = playlist.indexOf(current);
+				let previousIndex = ((currentIndex - 1) % playlist.length + playlist.length) % playlist.length
+			
+				api.setVideo(videos[i], previousIndex)
+			}
+		}
+
+		const nextVideo = function(videos) {
+			if (!Array.isArray(videos)) {
+				videos = [videos];
+			}
+
+			for (var i=0; i<videos.length; i++) {
+				let video = state.videos[videos[i]]
+				let current = video.current;
+				let playlist = video.playlist;
+
+				if (current === null) {
+					continue;
+				}
+
+				if (playlist.length === 0) {
+					continue;
+				}
+
+				let currentIndex = playlist.indexOf(current);
+				let nextIndex = (currentIndex + 1) % playlist.length;
+				
+				api.setVideo(videos[i], nextIndex)
+			}
+		}
+
+		const setVideo = function(videos, idx) {
+			if (!Array.isArray(videos)) {
+				videos = [videos];
+			}
+
+			for (var i=0; i<videos.length; i++) {
+				api.setVideo(videos[i], idx)
+			}
+		}
+
 		// Deprecated
 		const getEffectById = function(id) {
 			return [];
