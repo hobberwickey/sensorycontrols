@@ -30,7 +30,13 @@ output-screen {
 
 	.videos {
 		position: absolute;
-		display: none;
+		// display: none;
+
+		video {
+			position: relative;
+			width: 1px;
+			height: 1px;
+		}
 	}
 
 	.screen {
