@@ -192,27 +192,19 @@
 
       if (JSON.stringify(injected) !== JSON.stringify(this.temp)) {
         this.temp = [...injected];
-        console.log(this.temp);
       }
     }
 
     handleEnter(e) {
-      console.log(e.target, e.currentTarget, e.relatedTarget);
-
       if (!!e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
         return;
       }
-
-      //this.classList.add("dragover");
     }
 
     handleLeave(e) {
       if (!!e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) {
-        console.log("OOB");
         return;
       }
-
-      //this.classList.remove("dragover");
     }
 
     handleEnd(e) {
@@ -274,7 +266,6 @@
             file = await video.handle.getFile();
           }
 
-          console.log(this);
           if (file instanceof File) {
             if (ImageTypes.includes(file.type)) {
               this.querySelector("video").poster = URL.createObjectURL(file);
